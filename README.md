@@ -1,1 +1,3 @@
 # authn
+
+Flexible authentication server
