@@ -16,7 +16,7 @@
     "default": {
         "5448283": {
             "editable": true,
-            "path": "./../.."
+            "path": "./.."
         },
         "cffi": {
             "hashes": [
