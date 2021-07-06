@@ -103,8 +103,11 @@ def authenticate_begin():
     if not credentials:
         abort(404)
 
-    auth_data, state = server.authenticate_begin(credentials)
+    auth_data, state = server.authenticate_begin(credentials,user_verification="discouraged")
     session["state"] = state
+    print("\n\n\n\n")
+    print(auth_data)
+    print("\n\n\n\n")
     return cbor.encode(auth_data)
 
 
