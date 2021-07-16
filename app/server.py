@@ -37,23 +37,24 @@ from __future__ import print_function, absolute_import, unicode_literals
 
 from fido2.webauthn import PublicKeyCredentialRpEntity
 from fido2.client import ClientData
-from fido2.server import U2FFido2Server
+from fido2.server import Fido2Server
 from fido2.ctap2 import AttestationObject, AuthenticatorData
-from fido2.ctap1 import RegistrationData
-from fido2.utils import sha256, websafe_encode
 from fido2 import cbor
 from flask import Flask, session, request, redirect, abort
+from flask_sqlalchemy import SQLAlchemy
+from models import User
 
 import os
 
 
 app = Flask(__name__, static_url_path="")
 app.secret_key = os.urandom(32)  # Used for session.
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///example.sqlite"
+db = SQLAlchemy(app)
 
 rp = PublicKeyCredentialRpEntity("localhost", "Demo server")
-# By using the U2FFido2Server class, we can support existing credentials
-# registered by the legacy u2f.register API for an appId.
-server = U2FFido2Server("https://localhost:5000", rp)
+server = Fido2Server(rp)
+
 
 # Registered credentials are stored globally, in memory only. Single user
 # support, state is lost when the server terminates.
@@ -62,7 +63,12 @@ credentials = []
 
 @app.route("/")
 def index():
-    return redirect("/index-u2f.html")
+    db.session.add(User(username="Flask", email="example@example.com"))
+    db.session.commit()
+    users = User.query.all()
+    print(users)
+
+    return redirect("/index.html")
 
 
 @app.route("/api/register/begin", methods=["POST"])
@@ -75,6 +81,8 @@ def register_begin():
             "icon": "https://example.com/image.png",
         },
         credentials,
+        user_verification="discouraged",
+        authenticator_attachment="cross-platform",
     )
 
     session["state"] = state
@@ -101,11 +109,17 @@ def register_complete():
 
 @app.route("/api/authenticate/begin", methods=["POST"])
 def authenticate_begin():
+
+    print(credentials)
+
     if not credentials:
         abort(404)
 
-    auth_data, state = server.authenticate_begin(credentials)
+    auth_data, state = server.authenticate_begin(credentials,user_verification="discouraged")
     session["state"] = state
+    print("\n\n\n\n")
+    print(auth_data)
+    print("\n\n\n\n")
     return cbor.encode(auth_data)
 
 
@@ -131,51 +145,6 @@ def authenticate_complete():
         signature,
     )
     print("ASSERTION OK")
-    return cbor.encode({"status": "OK"})
-
-
-###############################################################################
-# WARNING!
-#
-# The below functions allow the registration of legacy U2F credentials.
-# This is provided FOR TESTING PURPOSES ONLY. New credentials should be
-# registered using the WebAuthn APIs.
-###############################################################################
-
-
-@app.route("/api/u2f/begin", methods=["POST"])
-def u2f_begin():
-    registration_data, state = server.register_begin(
-        {
-            "id": b"user_id",
-            "name": "a_user",
-            "displayName": "A. User",
-            "icon": "https://example.com/image.png",
-        },
-        credentials,
-    )
-
-    session["state"] = state
-    print("\n\n\n\n")
-    print(registration_data)
-    print("\n\n\n\n")
-    return cbor.encode(websafe_encode(registration_data["publicKey"]["challenge"]))
-
-
-@app.route("/api/u2f/complete", methods=["POST"])
-def u2f_complete():
-    data = cbor.decode(request.get_data())
-    client_data = ClientData.from_b64(data["clientData"])
-    reg_data = RegistrationData.from_b64(data["registrationData"])
-    print("clientData", client_data)
-    print("U2F RegistrationData:", reg_data)
-    att_obj = AttestationObject.from_ctap1(sha256(b"https://localhost:5000"), reg_data)
-    print("AttestationObject:", att_obj)
-
-    auth_data = att_obj.auth_data
-
-    credentials.append(auth_data.credential_data)
-    print("REGISTERED U2F CREDENTIAL:", auth_data.credential_data)
     return cbor.encode({"status": "OK"})
 
 

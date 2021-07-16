@@ -1,0 +1,17 @@
+[[source]]
+verify_ssl = true
+name = "pypi"
+url = "https://pypi.org/simple"
+
+[requires]
+python_version = "3.8"
+
+[packages]
+flask-restx = "*"
+Flask-SQLAlchemy = "*"
+pyOpenSSL = "*"
+fido2 = {path = "./fido2"}
+
+[scripts]
+app = "python app.py"
+initdb = "python initdb.py"
