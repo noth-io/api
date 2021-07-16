@@ -8,3 +8,5 @@ dist/
 .ropeproject/
 ChangeLog
 man/*.1
+*.sqlite
+Pipfile.lock

@@ -4,10 +4,11 @@ from flask import current_app as app
 from fido2.webauthn import PublicKeyCredentialRpEntity
 from fido2.client import ClientData
 from fido2.server import Fido2Server
-from fido2.ctap2 import AttestationObject, AuthenticatorData
+from fido2.ctap2 import AttestationObject, AuthenticatorData, AttestedCredentialData
 from fido2 import cbor
 from flask import Flask, session, request, redirect, abort
-from flask_sqlalchemy import SQLAlchemy
+
+from models import db, User, Fido2Credential
 
 # Blueprint Configuration
 fido2_bp = Blueprint(
@@ -18,11 +19,6 @@ rp = PublicKeyCredentialRpEntity("localhost", "Demo server")
 server = Fido2Server(rp)
 
 credentials = []
-
-@fido2_bp.route("/")
-def index():
-    return redirect("/index.html")
-
 
 @fido2_bp.route("/api/register/begin", methods=["POST"])
 def register_begin():
@@ -55,7 +51,12 @@ def register_complete():
 
     auth_data = server.register_complete(session["state"], client_data, att_obj)
 
-    credentials.append(auth_data.credential_data)
+    #credentials.append(auth_data.credential_data)
+
+    # ADD CREDENTIAL TO DB
+    db.session.add(Fido2Credential(attestation=auth_data.credential_data))
+    db.session.commit()   
+
     print("REGISTERED CREDENTIAL:", auth_data.credential_data)
     return cbor.encode({"status": "OK"})
 
@@ -63,7 +64,9 @@ def register_complete():
 @fido2_bp.route("/api/authenticate/begin", methods=["POST"])
 def authenticate_begin():
 
-    print(credentials)
+    cs = Fido2Credential.query.all()
+    for c in cs:
+        credentials.append(AttestedCredentialData(c.attestation))
 
     if not credentials:
         abort(404)
@@ -78,6 +81,11 @@ def authenticate_begin():
 
 @fido2_bp.route("/api/authenticate/complete", methods=["POST"])
 def authenticate_complete():
+
+    cs = Fido2Credential.query.all()
+    for c in cs:
+        credentials.append(AttestedCredentialData(c.attestation))
+
     if not credentials:
         abort(404)
 

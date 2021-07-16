@@ -13,5 +13,4 @@ pyOpenSSL = "*"
 fido2 = {path = "./fido2"}
 
 [scripts]
-app = "python app.py"
-initdb = "python initdb.py"
+flask = "flask run --cert=adhoc"
