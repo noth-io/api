@@ -8,20 +8,20 @@ from fido2.ctap2 import AttestationObject, AuthenticatorData
 from fido2 import cbor
 from flask import Flask, session, request, redirect, abort
 from flask_sqlalchemy import SQLAlchemy
-import os
 
 # Blueprint Configuration
 fido2_bp = Blueprint(
-    'fido2_bp', __name__,
-    static_folder='static'
-)
+    'fido2_bp', __name__
+    )
 
 rp = PublicKeyCredentialRpEntity("localhost", "Demo server")
 server = Fido2Server(rp)
 
+credentials = []
+
 @fido2_bp.route("/")
 def index():
-    return redirect("static/index.html")
+    return redirect("/index.html")
 
 
 @fido2_bp.route("/api/register/begin", methods=["POST"])
