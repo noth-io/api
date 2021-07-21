@@ -19,17 +19,19 @@
   <a href="/">Cancel</a>
 
   <script>
-    fetch('/api/register/begin', {
+    access_token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTYyNjg4NDQzMiwianRpIjoiOWVkNDhmNzAtMGE2Yy00YTBiLWEzNDctMmUzYWM1ZTMzZDVkIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6Impkb2UiLCJuYmYiOjE2MjY4ODQ0MzIsImV4cCI6MTYyNjg4NTMzMn0.Urw6czUYzPEddKBZVoOk_4pwFCPxxQ7U53-XLb0f1qE'
+    fetch('/api/register/fido2/begin', {
       method: 'POST',
+      headers: {'Authorization': 'Bearer ' + access_token},
     }).then(function(response) {
       if(response.ok) return response.arrayBuffer();
       throw new Error('Error getting registration data!');
     }).then(CBOR.decode).then(function(options) {
       return navigator.credentials.create(options);
     }).then(function(attestation) {
-      return fetch('/api/register/complete', {
+      return fetch('/api/register/fido2/complete', {
         method: 'POST',
-        headers: {'Content-Type': 'application/cbor'},
+        headers: {'Content-Type': 'application/cbor','Authorization': 'Bearer ' + access_token},
         body: CBOR.encode({
           "attestationObject": new Uint8Array(attestation.response.attestationObject),
           "clientDataJSON": new Uint8Array(attestation.response.clientDataJSON),

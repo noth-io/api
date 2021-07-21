@@ -7,12 +7,13 @@ from fido2.server import Fido2Server
 from fido2.ctap2 import AttestationObject, AuthenticatorData, AttestedCredentialData
 from fido2 import cbor
 from flask import Flask, session, request, redirect, abort
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 
 from models import db, User, Fido2Credential
 
 # Blueprint Configuration
-fido2_bp = Blueprint(
-    'fido2_bp', __name__
+fido2_authenticate_bp = Blueprint(
+    'fido2_authenticate_bp', __name__
     )
 
 rp = PublicKeyCredentialRpEntity("localhost", "Demo server")
@@ -20,68 +21,37 @@ server = Fido2Server(rp)
 
 credentials = []
 
-@fido2_bp.route("/api/register/begin", methods=["POST"])
-def register_begin():
-    registration_data, state = server.register_begin(
-        {
-            "id": b"user_id",
-            "name": "a_user",
-            "displayName": "A. User",
-            "icon": "https://example.com/image.png",
-        },
-        credentials,
-        user_verification="discouraged",
-        authenticator_attachment="cross-platform",
-    )
 
-    session["state"] = state
-    print("\n\n\n\n")
-    print(registration_data)
-    print("\n\n\n\n")
-    return cbor.encode(registration_data)
-
-
-@fido2_bp.route("/api/register/complete", methods=["POST"])
-def register_complete():
-    data = cbor.decode(request.get_data())
-    client_data = ClientData(data["clientDataJSON"])
-    att_obj = AttestationObject(data["attestationObject"])
-    print("clientData", client_data)
-    print("AttestationObject:", att_obj)
-
-    auth_data = server.register_complete(session["state"], client_data, att_obj)
-
-    #credentials.append(auth_data.credential_data)
-
-    # ADD CREDENTIAL TO DB
-    db.session.add(Fido2Credential(attestation=auth_data.credential_data))
-    db.session.commit()   
-
-    print("REGISTERED CREDENTIAL:", auth_data.credential_data)
-    return cbor.encode({"status": "OK"})
-
-
-@fido2_bp.route("/api/authenticate/begin", methods=["POST"])
+@fido2_authenticate_bp.route("/begin", methods=["POST"])
+@jwt_required(optional=True)
 def authenticate_begin():
 
+    current_identity = get_jwt_identity()
+    if not current_identity:
+        abort(401)
+    
+    # GET CREDENTIALS FROM DB
     cs = Fido2Credential.query.all()
     for c in cs:
         credentials.append(AttestedCredentialData(c.attestation))
-
+    
     if not credentials:
         abort(404)
 
     auth_data, state = server.authenticate_begin(credentials,user_verification="discouraged")
+    print(state)
     session["state"] = state
+    print(session)
     print("\n\n\n\n")
     print(auth_data)
     print("\n\n\n\n")
     return cbor.encode(auth_data)
 
 
-@fido2_bp.route("/api/authenticate/complete", methods=["POST"])
+@fido2_authenticate_bp.route("/complete", methods=["POST"])
 def authenticate_complete():
 
+    # GET CREDENTIALS FROM DB
     cs = Fido2Credential.query.all()
     for c in cs:
         credentials.append(AttestedCredentialData(c.attestation))

@@ -2,6 +2,39 @@
 <head>
   <title>Fido 2.0 webauthn demo</title>
   <script src="/cbor.js"></script>
+  <script>
+    function sendJSON(){
+			
+      let result = document.querySelector('.result');
+			let username = document.querySelector('#username');
+			
+			// Creating a XHR object
+			let xhr = new XMLHttpRequest();
+			let url = "/login";
+		
+			// open a connection
+			xhr.open("POST", url, true);
+
+			// Set the request header i.e. which type of content you are sending
+			xhr.setRequestHeader("Content-Type", "application/json");
+
+			// Create a state change callback
+			xhr.onreadystatechange = function () {
+				if (xhr.readyState === 4 && xhr.status === 200) {
+
+					// Print received data from server
+					result.innerHTML = this.responseText;
+
+				}
+			};
+
+			// Converting JSON data to string
+			var data = JSON.stringify({ "username": username.value });
+
+			// Sending data with the request
+			xhr.send(data);
+		}
+  </script>
   <style>
     body { font-family: sans-serif; line-height: 1.5em; padding: 2em 10em; }
     h1, h2 { color: #325F74; }
@@ -14,6 +47,19 @@
   <p>This demo requires a browser supporting the WebAuthn API!</p>
   <hr>
 
+  <p>
+    <!-- Making a text input -->
+    <input type="text" id="username" placeholder="Your name">
+      
+    <!-- Button to send data -->
+    <button onclick="sendJSON()">Send JSON</button>
+
+  <!-- For printing result from server -->
+  <p class="result" style="color:green"></p>
+  
+</p>
+
+<hr>
   <h2>Available actions</h2>
   <a href="/register.html">Register</a><br>
   <a href="/authenticate.html">Authenticate</a><br>

@@ -9,8 +9,8 @@ python_version = "3.8"
 [packages]
 flask-restx = "*"
 Flask-SQLAlchemy = "*"
+flask-jwt-extended = "*"
 pyOpenSSL = "*"
-fido2 = {path = "./fido2"}
 
 [scripts]
 flask = "flask run --cert=adhoc"

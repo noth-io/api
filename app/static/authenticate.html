@@ -19,15 +19,16 @@
   <a href="/">Cancel</a>
 
   <script>
-    fetch('/api/authenticate/begin', {
+    fetch('/api/authenticate/fido2/begin', {
       method: 'POST',
+      headers: {'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTYyNjg4MjY2NywianRpIjoiNTczNDUwOTEtOGJkYS00YTBiLWE5OWQtZDIzYjEyN2EyYjc2IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6Impkb2UiLCJuYmYiOjE2MjY4ODI2NjcsImV4cCI6MTYyNjg4MzU2N30.FCMXr1tNlo2qGPK7wQoIflMUDChF06Wpa5zIshGUmD8'},
     }).then(function(response) {
       if(response.ok) return response.arrayBuffer();
       throw new Error('No credential available to authenticate!');
     }).then(CBOR.decode).then(function(options) {
       return navigator.credentials.get(options);
     }).then(function(assertion) {
-      return fetch('/api/authenticate/complete', {
+      return fetch('/api/authenticate/fido2/complete', {
         method: 'POST',
         headers: {'Content-Type': 'application/cbor'},
         body: CBOR.encode({
