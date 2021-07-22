@@ -6,11 +6,15 @@ from models import db, User
 from flask_jwt_extended import JWTManager
 from fido2.webauthn import PublicKeyCredentialRpEntity
 from fido2.server import Fido2Server
+from flask_cors import CORS
 
 def create_app():
     app = Flask(__name__, static_url_path="")
     app.debug = True
 
+    # CORS
+    CORS(app)
+    
     # Secret key for sessions
     app.secret_key = os.urandom(32)
     #jwt_secret_key = os.urandom(32)
