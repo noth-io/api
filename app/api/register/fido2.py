@@ -9,6 +9,7 @@ from fido2 import cbor
 from flask import Flask, session, request, redirect, abort
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 from models import db, User, Fido2Credential
+from libs.user import VerifyUser
 
 # Blueprint Configuration
 fido2_register_bp = Blueprint(
@@ -24,10 +25,8 @@ credentials = []
 @jwt_required()
 def register_begin():
 
-    # Get token identity
-    current_identity = get_jwt_identity()
-
     # Check identity in DB
+    current_identity = get_jwt_identity()
     user = User.query.filter_by(username=current_identity).first()
     if not user:
         abort(401)
@@ -56,10 +55,8 @@ def register_begin():
 @jwt_required()
 def register_complete():
 
-    # Get token identity
-    current_identity = get_jwt_identity()
-
     # Check identity in DB
+    current_identity = get_jwt_identity()
     user = User.query.filter_by(username=current_identity).first()
     if not user:
         abort(401)
@@ -72,9 +69,7 @@ def register_complete():
 
     auth_data = server.register_complete(session["state"], client_data, att_obj)
 
-    #credentials.append(auth_data.credential_data)
-
-    # ADD CREDENTIAL TO DB
+    # Add credential to DB
     db.session.add(Fido2Credential(attestation=auth_data.credential_data, user_id=user.id))
     db.session.commit()   
 

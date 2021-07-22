@@ -19,7 +19,7 @@
   <a href="/">Cancel</a>
 
   <script>
-    access_token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTYyNjg4NDQzMiwianRpIjoiOWVkNDhmNzAtMGE2Yy00YTBiLWEzNDctMmUzYWM1ZTMzZDVkIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6Impkb2UiLCJuYmYiOjE2MjY4ODQ0MzIsImV4cCI6MTYyNjg4NTMzMn0.Urw6czUYzPEddKBZVoOk_4pwFCPxxQ7U53-XLb0f1qE'
+    access_token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTYyNjg5NTI4NywianRpIjoiNDk4ODI0YTctNGRmYS00NzEwLTk4OGYtYjFmMThkNjRiZjFiIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6Impkb2UiLCJuYmYiOjE2MjY4OTUyODcsImV4cCI6MTYyNjg5NjE4N30.npMqkql9220Qqztnaa-lb741MHeezu0RqUkNzkDabuM'
     fetch('/api/register/fido2/begin', {
       method: 'POST',
       headers: {'Authorization': 'Bearer ' + access_token},
@@ -31,7 +31,7 @@
     }).then(function(attestation) {
       return fetch('/api/register/fido2/complete', {
         method: 'POST',
-        headers: {'Content-Type': 'application/cbor','Authorization': 'Bearer ' + access_token},
+        headers: {'Content-Type': 'application/cbor', 'Authorization': 'Bearer ' + access_token},
         body: CBOR.encode({
           "attestationObject": new Uint8Array(attestation.response.attestationObject),
           "clientDataJSON": new Uint8Array(attestation.response.clientDataJSON),

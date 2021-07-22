@@ -19,9 +19,10 @@
   <a href="/">Cancel</a>
 
   <script>
+    access_token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTYyNjg5NTI4NywianRpIjoiNDk4ODI0YTctNGRmYS00NzEwLTk4OGYtYjFmMThkNjRiZjFiIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6Impkb2UiLCJuYmYiOjE2MjY4OTUyODcsImV4cCI6MTYyNjg5NjE4N30.npMqkql9220Qqztnaa-lb741MHeezu0RqUkNzkDabuM'
     fetch('/api/authenticate/fido2/begin', {
       method: 'POST',
-      headers: {'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTYyNjg4MjY2NywianRpIjoiNTczNDUwOTEtOGJkYS00YTBiLWE5OWQtZDIzYjEyN2EyYjc2IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6Impkb2UiLCJuYmYiOjE2MjY4ODI2NjcsImV4cCI6MTYyNjg4MzU2N30.FCMXr1tNlo2qGPK7wQoIflMUDChF06Wpa5zIshGUmD8'},
+      headers: {'Authorization': 'Bearer ' + access_token},
     }).then(function(response) {
       if(response.ok) return response.arrayBuffer();
       throw new Error('No credential available to authenticate!');
@@ -30,7 +31,7 @@
     }).then(function(assertion) {
       return fetch('/api/authenticate/fido2/complete', {
         method: 'POST',
-        headers: {'Content-Type': 'application/cbor'},
+        headers: {'Content-Type': 'application/cbor', 'Authorization': 'Bearer ' + access_token},
         body: CBOR.encode({
           "credentialId": new Uint8Array(assertion.rawId),
           "authenticatorData": new Uint8Array(assertion.response.authenticatorData),

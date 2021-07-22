@@ -23,20 +23,22 @@ credentials = []
 
 
 @fido2_authenticate_bp.route("/begin", methods=["POST"])
-@jwt_required(optional=True)
+@jwt_required()
 def authenticate_begin():
 
+    # Check identity in DB
     current_identity = get_jwt_identity()
-    if not current_identity:
+    user = User.query.filter_by(username=current_identity).first()
+    if not user:
         abort(401)
-    
-    # GET CREDENTIALS FROM DB
-    cs = Fido2Credential.query.all()
-    for c in cs:
-        credentials.append(AttestedCredentialData(c.attestation))
-    
-    if not credentials:
+
+    # Get credential from DB
+    user_creds = Fido2Credential.query.filter_by(user_id=user.id).all()
+    print(user_creds)
+    if not user_creds:
         abort(404)
+    for cred in user_creds:
+        credentials.append(AttestedCredentialData(cred.attestation))
 
     auth_data, state = server.authenticate_begin(credentials,user_verification="discouraged")
     print(state)
@@ -49,15 +51,21 @@ def authenticate_begin():
 
 
 @fido2_authenticate_bp.route("/complete", methods=["POST"])
+@jwt_required()
 def authenticate_complete():
 
-    # GET CREDENTIALS FROM DB
-    cs = Fido2Credential.query.all()
-    for c in cs:
-        credentials.append(AttestedCredentialData(c.attestation))
+    # Check identity in DB
+    current_identity = get_jwt_identity()
+    user = User.query.filter_by(username=current_identity).first()
+    if not user:
+        abort(401)
 
-    if not credentials:
+    # Get credential from DB
+    user_creds = Fido2Credential.query.filter_by(user_id=user.id).all()
+    if not user_creds:
         abort(404)
+    for cred in user_creds:
+        credentials.append(AttestedCredentialData(cred.attestation))
 
     data = cbor.decode(request.get_data())
     credential_id = data["credentialId"]
