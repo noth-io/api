@@ -8,8 +8,7 @@ from fido2.ctap2 import AttestationObject, AuthenticatorData, AttestedCredential
 from fido2 import cbor
 from flask import Flask, session, request, redirect, abort
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
-from models import db, User, Fido2Credential
-from libs.user import VerifyUser
+from database.models import db, User, Fido2Credential
 
 # Blueprint Configuration
 fido2_register_bp = Blueprint(

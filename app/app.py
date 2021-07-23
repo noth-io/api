@@ -2,16 +2,23 @@ import os
 from flask import Flask, redirect
 from api.authenticate import username, fido2 as fido2_authenticate
 from api.register import fido2 as fido2_register
-from api.users import users_bp
-from models import db, User
+from database.models import db
 from flask_jwt_extended import JWTManager
 from fido2.webauthn import PublicKeyCredentialRpEntity
 from fido2.server import Fido2Server
 from flask_cors import CORS
+from flask_restx import Api
+from api import api
+from flask_migrate import Migrate
 
 def create_app():
     app = Flask(__name__, static_url_path="")
     app.debug = True
+
+ 
+
+    # API
+    api.init_app(app)
 
     # CORS
     CORS(app, supports_credentials=True)
@@ -26,9 +33,10 @@ def create_app():
     # DB
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///example.sqlite"
     db.init_app(app)
-    with app.app_context():
+    migrate = Migrate(app, db, render_as_batch=True)
+    #with app.app_context():
         #db.drop_all()
-        db.create_all()
+        #db.create_all()
 
         #db.session.add(User(username="jdoe", email="jdoe@example.com", firstname="John", surname="Doe"))
         #db.session.commit() 
@@ -42,7 +50,6 @@ def create_app():
     app.register_blueprint(username.username_bp, url_prefix='/api/authenticate/')
     app.register_blueprint(fido2_authenticate.fido2_authenticate_bp, url_prefix='/api/authenticate/fido2')
     app.register_blueprint(fido2_register.fido2_register_bp, url_prefix='/api/register/fido2')
-    app.register_blueprint(users_bp, url_prefix='/api/users')
 
     @app.route("/")
     def index():    

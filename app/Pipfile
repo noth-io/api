@@ -11,7 +11,12 @@ flask-restx = "*"
 Flask-SQLAlchemy = "*"
 flask-jwt-extended = "*"
 flask-cors = "*"
+Flask-Migrate = "*"
+Flask-Mail = "*"
 pyOpenSSL = "*"
+requests = "*"
+itsdangerous = "*"
 
 [scripts]
-flask = "flask run --cert=adhoc"
+flask = "flask run --cert=adhoc --host=0.0.0.0"
+initdb = "flask db init"

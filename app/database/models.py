@@ -8,7 +8,8 @@ class User(db.Model):
     username = db.Column(db.String, unique=True, nullable=False)
     email = db.Column(db.String, unique=True, nullable=False)
     firstname = db.Column(db.String, nullable=False)
-    surname = db.Column(db.String, nullable=False)
+    lastname = db.Column(db.String, nullable=False)
+    verified = db.Column(db.Boolean, nullable=False, default=False)
     fido2credential = db.relationship("Fido2Credential")
 
     def json (self):
@@ -17,7 +18,9 @@ class User(db.Model):
         json['username'] = self.username
         json['email'] = self.email
         json['firstname'] = self.firstname
-        json['surname'] = self.surname
+        json['lastname'] = self.lastname
+        json['verified'] = self.verified
+
         return json
 
     def __repr__(self):
