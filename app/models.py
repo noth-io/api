@@ -11,6 +11,15 @@ class User(db.Model):
     surname = db.Column(db.String, nullable=False)
     fido2credential = db.relationship("Fido2Credential")
 
+    def json (self):
+        json = {}
+        json['id'] = self.id
+        json['username'] = self.username
+        json['email'] = self.email
+        json['firstname'] = self.firstname
+        json['surname'] = self.surname
+        return json
+
     def __repr__(self):
         return '<User %r>' % self.username
 

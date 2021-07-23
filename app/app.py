@@ -2,6 +2,7 @@ import os
 from flask import Flask, redirect
 from api.authenticate import username, fido2 as fido2_authenticate
 from api.register import fido2 as fido2_register
+from api.users import users_bp
 from models import db, User
 from flask_jwt_extended import JWTManager
 from fido2.webauthn import PublicKeyCredentialRpEntity
@@ -41,6 +42,7 @@ def create_app():
     app.register_blueprint(username.username_bp, url_prefix='/api/authenticate/')
     app.register_blueprint(fido2_authenticate.fido2_authenticate_bp, url_prefix='/api/authenticate/fido2')
     app.register_blueprint(fido2_register.fido2_register_bp, url_prefix='/api/register/fido2')
+    app.register_blueprint(users_bp, url_prefix='/api/users')
 
     @app.route("/")
     def index():    
