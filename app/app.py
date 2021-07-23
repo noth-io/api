@@ -13,21 +13,24 @@ def create_app():
     app.debug = True
 
     # CORS
-    CORS(app)
+    CORS(app, supports_credentials=True)
     
     # Secret key for sessions
     app.secret_key = os.urandom(32)
+    #app.config['SESSION_COOKIE_SAMESITE'] = "None"
+    #app.config['SESSION_COOKIE_SECURE'] = "True"
+    app.config['SESSION_COOKIE_HTTPONLY'] = False
     #jwt_secret_key = os.urandom(32)
 
     # DB
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///example.sqlite"
     db.init_app(app)
     with app.app_context():
-        db.drop_all()
+        #db.drop_all()
         db.create_all()
 
-        db.session.add(User(username="jdoe", email="jdoe@example.com", firstname="John", surname="Doe"))
-        db.session.commit() 
+        #db.session.add(User(username="jdoe", email="jdoe@example.com", firstname="John", surname="Doe"))
+        #db.session.commit() 
 
     # Setup the Flask-JWT-Extended extension
     jwt_secret_key = os.urandom(32)

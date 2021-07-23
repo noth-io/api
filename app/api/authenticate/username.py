@@ -16,5 +16,6 @@ def login():
     if username != "jdoe":
         return jsonify({"msg": "Bad username or password"}), 401
 
-    access_token = create_access_token(identity=username)
+    additional_claims = {"state": 0}
+    access_token = create_access_token(identity=username, additional_claims=additional_claims)
     return jsonify(access_token=access_token)

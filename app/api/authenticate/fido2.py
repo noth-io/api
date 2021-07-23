@@ -1,5 +1,5 @@
 from __future__ import print_function, absolute_import, unicode_literals
-from flask import Blueprint
+from flask import Blueprint, jsonify
 from flask import current_app as app
 from fido2.webauthn import PublicKeyCredentialRpEntity
 from fido2.client import ClientData
@@ -67,6 +67,7 @@ def authenticate_complete():
     for cred in user_creds:
         credentials.append(AttestedCredentialData(cred.attestation))
 
+    print(request.get_data())
     data = cbor.decode(request.get_data())
     credential_id = data["credentialId"]
     client_data = ClientData(data["clientDataJSON"])
@@ -84,4 +85,7 @@ def authenticate_complete():
         signature,
     )
     print("ASSERTION OK")
-    return cbor.encode({"status": "OK"})
+
+    additional_claims = {"state": 99}
+    access_token = create_access_token(identity=current_identity, additional_claims=additional_claims)
+    return jsonify(access_token=access_token)

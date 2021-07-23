@@ -1,5 +1,5 @@
 from __future__ import print_function, absolute_import, unicode_literals
-from flask import Blueprint
+from flask import Blueprint, jsonify, json
 from flask import current_app as app
 from fido2.webauthn import PublicKeyCredentialRpEntity
 from fido2.client import ClientData
@@ -48,8 +48,17 @@ def register_begin():
     print("\n\n\n\n")
     print(registration_data)
     print("\n\n\n\n")
-    return cbor.encode(registration_data)
+    #print(json.loads(registration_data))
+    #print(json.loads(cbor.encode(registration_data)))
 
+    #data = {}
+    #data["state"] = state
+    #data["registration_data"] = cbor.encode(registration_data)
+    #print(data)
+    #print(cbor.encode(registration_data).decode('utf-8'))
+    return cbor.encode(registration_data)
+    #return jsonify(data)
+    #return  '{} {}'.format(cbor.encode(registration_data), state)
 
 @fido2_register_bp.route("/complete", methods=["POST"])
 @jwt_required()
