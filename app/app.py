@@ -1,15 +1,12 @@
 import os
 from flask import Flask, redirect
-from api.authenticate import username, fido2 as fido2_authenticate
 from api.register import fido2 as fido2_register
 from database.models import db
 from flask_jwt_extended import JWTManager
-from fido2.webauthn import PublicKeyCredentialRpEntity
-from fido2.server import Fido2Server
 from flask_cors import CORS
-from flask_restx import Api
-from api import api
 from flask_migrate import Migrate
+from api.authentication.api import blueprint as authentication_api
+from api.users.api import blueprint as users_api
 
 def create_app():
     app = Flask(__name__, static_url_path="")
@@ -18,7 +15,7 @@ def create_app():
  
 
     # API
-    api.init_app(app)
+    #api.init_app(app)
 
     # CORS
     CORS(app, supports_credentials=True)
@@ -47,9 +44,11 @@ def create_app():
     jwt = JWTManager(app)
 
     # Register blueprints
-    app.register_blueprint(username.username_bp, url_prefix='/api/authenticate/')
-    app.register_blueprint(fido2_authenticate.fido2_authenticate_bp, url_prefix='/api/authenticate/fido2')
-    app.register_blueprint(fido2_register.fido2_register_bp, url_prefix='/api/register/fido2')
+    #app.register_blueprint(username.username_bp, url_prefix='/api/authenticate/')
+    #app.register_blueprint(fido2_authenticate.fido2_authenticate_bp, url_prefix='/api/authenticate/fido2')
+    #app.register_blueprint(fido2_register.fido2_register_bp, url_prefix='/api/register/fido2')
+    app.register_blueprint(authentication_api)
+    app.register_blueprint(users_api)
 
     @app.route("/")
     def index():    
