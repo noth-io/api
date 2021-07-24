@@ -22,6 +22,11 @@ mail_authstate = 2
 class SendAuthenticationMail(Resource):
     @jwt_required()
     def post(self):
+
+        # Check if correct authentication step
+        if get_jwt().get("authstep") != mail_authstate:
+            abort(400)
+            
         # Check identity in DB
         current_identity = get_jwt_identity()
         user = User.query.filter_by(username=current_identity).first()
@@ -66,6 +71,11 @@ class SendAuthenticationMail(Resource):
 class CheckAuthenticationMail(Resource):
     @jwt_required()
     def get(self, token):
+
+        # Check if correct authentication step
+        if get_jwt().get("authstep") != mail_authstate:
+            abort(400)
+
         # Check identity in DB
         current_identity = get_jwt_identity()
         user = User.query.filter_by(username=current_identity).first()

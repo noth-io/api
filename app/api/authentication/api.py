@@ -4,6 +4,7 @@ from flask import Blueprint
 from .mail import api as mail
 from .username import api as username
 from .fido2 import api as fido2
+from .init import api as init
 
 # Init API
 blueprint = Blueprint('Authentication API', __name__, url_prefix='/authentication')
@@ -14,6 +15,7 @@ api = Api(blueprint,
     doc='/doc')
 
 # Add namescapes
+api.add_namespace(init, path='/init')
 api.add_namespace(username, path='/username')
 api.add_namespace(mail, path='/mail')
 api.add_namespace(fido2, path='/fido2')

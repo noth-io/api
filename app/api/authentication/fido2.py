@@ -28,6 +28,10 @@ class Fido2AuthenticationBegin(Resource):
     @jwt_required()
     def post(self):
 
+        # Check if correct authentication step
+        if get_jwt().get("authstep") != fido2_authstate:
+            abort(400)
+
         # Check identity in DB
         current_identity = get_jwt_identity()
         user = User.query.filter_by(username=current_identity).first()
@@ -57,6 +61,10 @@ class Fido2AuthenticationComplete(Resource):
     @jwt_required()
     def post(self):
 
+        # Check if correct authentication step
+        if get_jwt().get("authstep") != fido2_authstate:
+            abort(400)
+            
         # Check identity in DB
         current_identity = get_jwt_identity()
         user = User.query.filter_by(username=current_identity).first()
