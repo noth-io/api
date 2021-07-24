@@ -1,6 +1,5 @@
 import os
 from flask import Flask, redirect
-from api.register import fido2 as fido2_register
 from database.models import db
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS

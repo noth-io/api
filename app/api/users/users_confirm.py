@@ -7,23 +7,28 @@ from flask_restx import Namespace, Resource, fields
 import requests
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 
+# import config
+from config import *
+
 # Config Mail
-mailapikey = "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"
-mailapiurl = "https://api.sendinblue.com/v3/smtp/email"
-s = URLSafeTimedSerializer('Thisisasecret!')
+mailapikey = MAIL_API_KEY
+mailapiurl = MAIL_API_URL
+s = URLSafeTimedSerializer(MAIL_TOKEN_CONFIRM_SECRET)
 
 # Init API
-api = Namespace('User verify', description='User verify API')
+api = Namespace('Confirm User', description='User confirmation API')
 
-@api.route('/<id>/verify')
-class SendUserVerifyMail(Resource):
-    def get(self, id):
-        # Get user from DB
-        user = User.query.filter_by(id=id).first()
+@api.route('/confirm')
+class SendUserConfirmMail(Resource):
+    @jwt_required()
+    def post(self):
+        # Check identity in DB
+        current_identity = get_jwt_identity()
+        user = User.query.filter_by(username=current_identity).first()
         if not user:
             abort(401, 'invalid user')
-        if user.verified is True:
-            abort(400, 'user is already verified')
+        if user.confirmed is True:
+            abort(400, 'user is already confirmed')
 
         email = user.email
         firstname = user.firstname
@@ -36,8 +41,8 @@ class SendUserVerifyMail(Resource):
         headers = { "accept": "application/json", "api-key": mailapikey, "content-type": "application/json" }
         payload = {  
             "sender": {  
-                "name":"Noth",
-                "email":"admin@noth.io"
+                "name": MAIL_SENDER_NAME,
+                "email": MAIL_SENDER_EMAIL
             },
             "to": [  
                 {  
@@ -46,7 +51,7 @@ class SendUserVerifyMail(Resource):
                 }
             ],
             "subject": "Account confirmation",
-            "htmlContent": "<html><head></head><body><a href='https://192.168.5.52:5000/users/%s/verify/%s'>Click here to confirm your account</a></body></html>" % (id, token)
+            "htmlContent": "<html><head></head><body><a href='%s/users/confirm/%s'>Click here to confirm your account</a></body></html>" % (API_URL, token)
         }
         r = requests.post(mailapiurl, headers=headers, data=json.dumps(payload))
 
@@ -59,28 +64,30 @@ class SendUserVerifyMail(Resource):
         resp = Response(response=json.dumps(msg), status=status, mimetype="application/json")
         return resp
 
-@api.route('/<id>/verify/<token>')
-class CheckUserVerifyMail(Resource):
-    def get(self, id, token):
-        # Get user from DB
-        user = User.query.filter_by(id=id).first()
+@api.route('/confirm/<token>')
+class CheckUserConfirmMail(Resource):
+    @jwt_required()
+    def get(self, token):
+        # Check identity in DB
+        current_identity = get_jwt_identity()
+        user = User.query.filter_by(username=current_identity).first()
         if not user:
             abort(401, 'invalid user')
-        if user.verified is True:
-            abort(400, 'user is already verified')
+        if user.confirmed is True:
+            abort(400, 'user is already confirmed')
 
         try:
             email = s.loads(token, salt='user-confirm', max_age=600)
             if email == user.email:
-                # Update verified in DB
-                user.verified = True
+                # Update confirmed in DB
+                user.confirmed = True
                 db.session.commit()
-                msg = { "message": "user is verified" }
+                msg = { "message": "user is confirmed" }
                 status = 200
             else:
                 raise
         except:
-            abort(404, "user can't be verified")
+            abort(404, "user can't be confirmed")
 
         resp = Response(response=json.dumps(msg), status=status, mimetype="application/json")
         return resp

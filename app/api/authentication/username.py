@@ -7,7 +7,7 @@ from database.models import db, User
 
 api = Namespace('Username', description='Username authentication API')
 
-username_authlevel = 1
+username_authstate = 1
 
 @api.route('')
 class UsernameAuthentication(Resource):
@@ -18,6 +18,6 @@ class UsernameAuthentication(Resource):
         if not user:
             abort(401, 'invalid user')
 
-        additional_claims = {"level": username_authlevel}
+        additional_claims = {"state": username_authstate}
         access_token = create_access_token(identity=username, additional_claims=additional_claims)
         return jsonify(access_token=access_token)

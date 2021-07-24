@@ -6,14 +6,17 @@ from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 import requests
 from database.models import db, User
 
-api = Namespace('Mail', description='Mail authentication API')
+# import config
+from config import *
 
 # Config Mail
-mailapikey = "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"
-mailapiurl = "https://api.sendinblue.com/v3/smtp/email"
-s = URLSafeTimedSerializer('Thisisasecret!')
+mailapikey = MAIL_API_KEY
+mailapiurl = MAIL_API_URL
+s = URLSafeTimedSerializer(MAIL_TOKEN_AUTHENTICATION_SECRET)
 
-mail_authlevel = 2
+api = Namespace('Mail', description='Mail authentication API')
+
+mail_authstate = 2
 
 @api.route('')
 class SendAuthenticationMail(Resource):
@@ -36,8 +39,8 @@ class SendAuthenticationMail(Resource):
         headers = { "accept": "application/json", "api-key": mailapikey, "content-type": "application/json" }
         payload = {  
             "sender": {  
-                "name":"Noth",
-                "email":"admin@noth.io"
+                "name": MAIL_SENDER_NAME,
+                "email": MAIL_SENDER_EMAIL
             },
             "to": [  
                 {  
@@ -46,7 +49,7 @@ class SendAuthenticationMail(Resource):
                 }
             ],
             "subject": "User authentication",
-            "htmlContent": "<html><head></head><body><a href='https://192.168.5.52:5000/authentication/mail/%s'>Click here to authenticate</a></body></html>" % (token)
+            "htmlContent": "<html><head></head><body><a href='%s/authentication/mail/%s'>Click here to authenticate</a></body></html>" % (API_URL, token)
         }
         r = requests.post(mailapiurl, headers=headers, data=json.dumps(payload))
 
@@ -69,14 +72,14 @@ class CheckAuthenticationMail(Resource):
         if not user:
             abort(401, 'invalid user')
 
-        # Get authentication level
-        level = get_jwt().get("level")
-        newlevel = level | mail_authlevel
+        # Define new auth state
+        state = get_jwt().get("state")
+        newstate = state | mail_authstate
 
         try:
             email = s.loads(token, salt='user-mailauth', max_age=600)
             if email == user.email:
-                additional_claims = {"level": newlevel}
+                additional_claims = {"state": newstate}
                 msg = create_access_token(identity=user.username, additional_claims=additional_claims)
                 status = 200
             else:

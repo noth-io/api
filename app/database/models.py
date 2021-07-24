@@ -9,7 +9,7 @@ class User(db.Model):
     email = db.Column(db.String, unique=True, nullable=False)
     firstname = db.Column(db.String, nullable=False)
     lastname = db.Column(db.String, nullable=False)
-    verified = db.Column(db.Boolean, nullable=False, default=False)
+    confirmed = db.Column(db.Boolean, nullable=False, default=False)
     fido2credential = db.relationship("Fido2Credential")
 
     def json (self):
@@ -19,7 +19,7 @@ class User(db.Model):
         json['email'] = self.email
         json['firstname'] = self.firstname
         json['lastname'] = self.lastname
-        json['verified'] = self.verified
+        json['confirmed'] = self.confirmed
 
         return json
 
