@@ -6,11 +6,11 @@ from flask_cors import CORS
 from flask_migrate import Migrate
 from api.authentication.api import blueprint as authentication_api
 from api.users.api import blueprint as users_api
+# import config
+from config import *
 
 app = Flask(__name__, static_url_path="")
 app.debug = True
-
-
 
 # API
 #api.init_app(app)
@@ -19,7 +19,7 @@ app.debug = True
 CORS(app, supports_credentials=True)
 
 # Secret key for sessions
-app.secret_key = os.urandom(32)
+app.secret_key = SESSION_SECRET_KEY
 #app.config['SESSION_COOKIE_SAMESITE'] = "None"
 #app.config['SESSION_COOKIE_SECURE'] = "True"
 app.config['SESSION_COOKIE_HTTPONLY'] = False

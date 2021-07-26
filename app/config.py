@@ -3,6 +3,9 @@
 # API
 API_URL = "https://api.noth.meanite.tk"
 
+# SESSION
+SESSION_SECRET_KEY = "tochange"
+
 # FIDO 2 RP CONFIG
 FIDO2_NAME = "NOTH"
 FIDO2_RP = "noth.meanite.tk"
