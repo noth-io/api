@@ -1,11 +1,22 @@
 [[source]]
-url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
-
-[packages]
-
-[dev-packages]
+url = "https://pypi.org/simple"
 
 [requires]
 python_version = "3.8"
+
+[packages]
+flask-restx = "*"
+Flask-SQLAlchemy = "*"
+flask-jwt-extended = "*"
+flask-cors = "*"
+Flask-Migrate = "*"
+Flask-Mail = "*"
+pyOpenSSL = "*"
+requests = "*"
+itsdangerous = "*"
+
+[scripts]
+flask = "flask run --cert=adhoc --host=0.0.0.0"
+initdb = "flask db init"
