@@ -18,6 +18,6 @@ class UsernameAuthentication(Resource):
         if not user:
             abort(401, 'invalid user')
 
-        additional_claims = {"state": username_authstate, "authstep": 2}
+        additional_claims = {"state": username_authstate, "authstep": 4}
         access_token = create_access_token(identity=username, additional_claims=additional_claims)
         return jsonify(access_token=access_token)
