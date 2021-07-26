@@ -8,7 +8,7 @@ from flask_restx import Namespace, Resource, fields
 # Init API
 api = Namespace('Users CRUD', description='Users CRUD API')
 
-@api.route('/')
+@api.route('')
 class Users(Resource):
     # Get all Users
     def get(self):
