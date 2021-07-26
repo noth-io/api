@@ -7,8 +7,6 @@ url = "https://pypi.org/simple"
 python_version = "3.8"
 
 [packages]
-sqlalchemy = "1.4.18"
-greenlet = "==0.4.16"
 flask-restx = "*"
 Flask-SQLAlchemy = "*"
 flask-jwt-extended = "*"
