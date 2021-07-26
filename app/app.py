@@ -27,7 +27,7 @@ app.config['SESSION_COOKIE_HTTPONLY'] = False
 
 # DB
 #app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///example.sqlite"
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://%s:%s@%s/%s' % (DB_USER, DB_PASSWORD, DB_URL, DB_NAME)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://noth:password@noth-db/nothdb' #% (DB_USER, DB_PASSWORD, DB_URL, DB_NAME)
 app.config['SQLALCHEMY_ECHO'] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
