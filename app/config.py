@@ -5,7 +5,7 @@ API_URL = "https://api.noth.meanite.tk"
 
 # FIDO 2 RP CONFIG
 FIDO2_NAME = "NOTH"
-FIDO2_RP = "api.noth.meanite.tk"
+FIDO2_RP = "noth.meanite.tk"
 
 # MAIL
 MAIL_SENDER_NAME = "Noth"
