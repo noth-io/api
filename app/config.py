@@ -1,11 +1,11 @@
 # coding=utf-8
 
 # API
-API_URL = "https://noth.io:5000"
+API_URL = "https://api.noth.meanite.tk"
 
 # FIDO 2 RP CONFIG
 FIDO2_NAME = "NOTH"
-FIDO2_RP = "noth.io"
+FIDO2_RP = "api.noth.meanite.tk"
 
 # MAIL
 MAIL_SENDER_NAME = "Noth"
