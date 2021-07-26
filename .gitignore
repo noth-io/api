@@ -9,4 +9,4 @@ dist/
 ChangeLog
 man/*.1
 *.sqlite
-*.env
+.env.local
