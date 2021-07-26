@@ -1,14 +1,13 @@
-FROM tiangolo/meinheld-gunicorn-flask:python3.8
-
-ENV STATIC_INDEX 1
-
-#RUN apt-get update && apt-get install -y pipenv
-#COPY Pipfile .
-#COPY Pipfile.lock .
-#RUN pipenv install --system --ignore-pipfile
+FROM python:3.8
 
 COPY requirements.txt .
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+RUN python -m venv venv
+RUN venv/bin/pip install --default-timeout=100 -r requirements.txt
+RUN venv/bin/pip install gunicorn
 
-COPY ./app /app
+COPY app .
+COPY boot.sh .
+RUN chmod u+x boot.sh
+
+EXPOSE 8000
+ENTRYPOINT ["./boot.sh"]
