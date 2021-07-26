@@ -16,6 +16,7 @@ Flask-Mail = "*"
 pyOpenSSL = "*"
 requests = "*"
 itsdangerous = "*"
+psycopg2-binary = "*"
 
 [scripts]
 flask = "flask run --cert=adhoc --host=0.0.0.0"
