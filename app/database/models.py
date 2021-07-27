@@ -1,4 +1,10 @@
+import time
 from flask_sqlalchemy import SQLAlchemy
+from authlib.integrations.sqla_oauth2 import (
+    OAuth2ClientMixin,
+    OAuth2AuthorizationCodeMixin,
+    OAuth2TokenMixin,
+)
 
 db = SQLAlchemy()
 
@@ -23,8 +29,15 @@ class User(db.Model):
 
         return json
 
+    def __str__(self):
+        return self.username
+
+    def get_user_id(self):
+        return self.id
+
     def __repr__(self):
         return '<User %r>' % self.username
+    
 
 class Fido2Credential(db.Model):
     __tablename__ = 'fido2credential'
@@ -34,3 +47,29 @@ class Fido2Credential(db.Model):
 
     def __repr__(self):
         return '%s' % self.attestation
+
+class OAuth2Client(db.Model, OAuth2ClientMixin):
+    __tablename__ = 'oauth2_client'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
+    user = db.relationship('User')
+
+
+class OAuth2AuthorizationCode(db.Model, OAuth2AuthorizationCodeMixin):
+    __tablename__ = 'oauth2_code'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
+    user = db.relationship('User')
+
+
+class OAuth2Token(db.Model, OAuth2TokenMixin):
+    __tablename__ = 'oauth2_token'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
+    user = db.relationship('User')

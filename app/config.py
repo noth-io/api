@@ -25,4 +25,10 @@ DB_NAME = os.getenv('NOTH_API_DB_NAME')
 DB_USER = os.getenv('NOTH_API_DB_USER')
 DB_PASSWORD = os.getenv('NOTH_API_DB_PASSWORD')
 
+# OAUTH2
+OAUTH2_JWT_ENABLED = True
+OAUTH2_JWT_ISS = 'https://authlib.org'
+OAUTH2_JWT_KEY = 'secret-key'
+OAUTH2_JWT_ALG = 'HS256'
+
 
