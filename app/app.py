@@ -6,7 +6,7 @@ from flask_cors import CORS
 from flask_migrate import Migrate
 # oauth
 from oauth2 import config_oauth
-from api.oauth2.oauth2 import bp as oauth2_bp
+from api.oauth2.api import blueprint as oauth2_api
 
 # import api
 from api.authentication.api import blueprint as authentication_api
@@ -39,6 +39,7 @@ app.config["OAUTH2_JWT_ENABLED"] = OAUTH2_JWT_ENABLED
 app.config["OAUTH2_JWT_ISS"] = OAUTH2_JWT_ISS
 app.config["OAUTH2_JWT_KEY"] = OAUTH2_JWT_KEY
 app.config["OAUTH2_JWT_ALG"] = OAUTH2_JWT_ALG
+config_oauth(app)
 
 
 
@@ -50,7 +51,7 @@ jwt = JWTManager(app)
 # Register blueprints
 app.register_blueprint(authentication_api)
 app.register_blueprint(users_api)
-app.register_blueprint(oauth2_bp)
+app.register_blueprint(oauth2_api)
 
 
 @app.route("/")
