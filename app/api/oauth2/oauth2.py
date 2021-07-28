@@ -9,8 +9,6 @@ from oauth2 import authorization, require_oauth, generate_user_info
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, decode_token, get_jwt
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
-import time
-
 # import config
 from config import *
 
@@ -24,61 +22,7 @@ def current_user():
         return User.query.get(uid)
     return None
 
-"""
-@bp.route('/', methods=('GET', 'POST'))
-def home():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        user = User.query.filter_by(username=username).first()
-        if not user:
-            user = User(username=username)
-            db.session.add(user)
-            db.session.commit()
-        session['id'] = user.id
-        return redirect('/oauth/')
-    user = current_user()
-    if user:
-        clients = OAuth2Client.query.filter_by(user_id=user.id).all()
-    else:
-        clients = []
-    return render_template('home.html', user=user, clients=clients)
-"""
 
-def split_by_crlf(s):
-    return [v for v in s.splitlines() if v]
-
-"""
-@bp.route('/create_client', methods=('GET', 'POST'))
-def create_client():
-    user = current_user()
-    if not user:
-        return redirect('/oauth/')
-    if request.method == 'GET':
-        return render_template('create_client.html')
-    form = request.form
-    client_id = gen_salt(24)
-    client = OAuth2Client(client_id=client_id, user_id=user.id)
-    # Mixin doesn't set the issue_at date
-    client.client_id_issued_at = int(time.time())
-    if client.token_endpoint_auth_method == 'none':
-        client.client_secret = ''
-    else:
-        client.client_secret = gen_salt(48)
-
-    client_metadata = {
-        "client_name": form["client_name"],
-        "client_uri": form["client_uri"],
-        "grant_types": split_by_crlf(form["grant_type"]),
-        "redirect_uris": split_by_crlf(form["redirect_uri"]),
-        "response_types": split_by_crlf(form["response_type"]),
-        "scope": form["scope"],
-        "token_endpoint_auth_method": form["token_endpoint_auth_method"]
-    }
-    client.set_client_metadata(client_metadata)
-    db.session.add(client)
-    db.session.commit()
-    return redirect('/oauth/')
-"""
 
 @api.route('/authorize')
 class AuthorizationEndpoint(Resource):
@@ -125,9 +69,8 @@ class TokenEndpoint(Resource):
     def post(self):
         return authorization.create_token_response()
 
-"""
-@bp.route('/userinfo')
-@require_oauth('profile')
-def api_me():
-    return jsonify(generate_user_info(current_token.user, current_token.scope))
-"""
+@api.route('/userinfo')
+class UserinfoEndpoint(Resource):
+    @require_oauth('profile')
+    def get(self):
+        return jsonify(generate_user_info(current_token.user, current_token.scope))

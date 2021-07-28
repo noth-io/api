@@ -33,17 +33,13 @@ class Users(Resource):
         db.session.add(user)
         try:
             db.session.commit()
-            msg = '{"message": "registration success"}'
-            status = 201
         except Exception as error:
-            print(error)
             if "UNIQUE constraint" in str(error):
                 abort(400, 'user with this username or email is already registered')
             else:
                 abort(500)
 
-        resp = Response(response=msg, status=status, mimetype="application/json")
-        return resp
+        return user.json(), 201
 
 @api.route('/<id>')
 class SingleUsers(Resource):
@@ -52,14 +48,20 @@ class SingleUsers(Resource):
         # Get user from DB
         user = User.query.filter_by(id=id).first()
         if not user:
-            abort(401, 'invalid user')
+            abort(404, 'user not found')
         
         # Delete user in DB
         db.session.delete(user)
         db.session.commit()
 
-        msg = '{"message": "user successfully deleted"}'
-        status = 200
+        msg = { "message": "user successfully deleted" }
+        return msg
 
-        resp = Response(response=msg, status=status, mimetype="application/json")
-        return resp
+    # Get User
+    def get(self, id):
+        # Get user from DB
+        user = User.query.filter_by(id=id).first()
+        if not user:
+            abort(404, 'user not found')
+    
+        return user.json()

@@ -5,6 +5,7 @@ from authlib.integrations.sqla_oauth2 import (
     OAuth2AuthorizationCodeMixin,
     OAuth2TokenMixin,
 )
+from flask import json
 
 db = SQLAlchemy()
 
@@ -26,7 +27,6 @@ class User(db.Model):
         json['firstname'] = self.firstname
         json['lastname'] = self.lastname
         json['confirmed'] = self.confirmed
-
         return json
 
     def __str__(self):
@@ -49,12 +49,44 @@ class Fido2Credential(db.Model):
         return '%s' % self.attestation
 
 class OAuth2Client(db.Model, OAuth2ClientMixin):
+
+    ##### ON DELETE CASCADE !!! DONT WORK
+    
     __tablename__ = 'oauth2_client'
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(
         db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
     user = db.relationship('User')
+
+    def json(self):
+        json = {}
+        json['id'] = self.id
+        json['client_id'] = self.client_id
+        json['client_id_issued_at'] = self.client_id_issued_at
+        json['client_name'] = self.client_name
+        json['client_uri'] = self.client_uri
+        json['grant_types'] = self.grant_types
+        json['redirect_uris'] = self.redirect_uris
+        json['response_types'] = self.response_types
+        json['scope'] = self.scope
+        json['token_endpoint_auth_method'] = self.token_endpoint_auth_method
+        return json
+
+    def json_with_secret(self):
+        json = {}
+        json['id'] = self.id
+        json['client_id'] = self.client_id
+        json['client_id_issued_at'] = self.client_id_issued_at
+        json['client_secret'] = self.client_secret
+        json['client_name'] = self.client_name
+        json['client_uri'] = self.client_uri
+        json['grant_types'] = self.grant_types
+        json['redirect_uris'] = self.redirect_uris
+        json['response_types'] = self.response_types
+        json['scope'] = self.scope
+        json['token_endpoint_auth_method'] = self.token_endpoint_auth_method
+        return json
 
 
 class OAuth2AuthorizationCode(db.Model, OAuth2AuthorizationCodeMixin):

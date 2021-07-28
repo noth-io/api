@@ -2,7 +2,7 @@ from flask_restx import Api
 from flask_restx import Namespace, Resource, fields
 from flask import Blueprint
 from .oauth2 import api as oauth2
-#from .oauth2 import api as clients
+from .clients_crud import api as clients
 
 # Init API
 blueprint = Blueprint('OAuth2 API', __name__, url_prefix='/oauth2')
@@ -14,3 +14,4 @@ api = Api(blueprint,
 
 # Add namescapes
 api.add_namespace(oauth2, path='/')
+api.add_namespace(clients, path='/clients')
