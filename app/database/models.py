@@ -1,5 +1,6 @@
 import time
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import backref
 from authlib.integrations.sqla_oauth2 import (
     OAuth2ClientMixin,
     OAuth2AuthorizationCodeMixin,
@@ -17,7 +18,6 @@ class User(db.Model):
     firstname = db.Column(db.String, nullable=False)
     lastname = db.Column(db.String, nullable=False)
     confirmed = db.Column(db.Boolean, nullable=False, default=False)
-    fido2credential = db.relationship("Fido2Credential")
 
     def json (self):
         json = {}
@@ -44,20 +44,17 @@ class Fido2Credential(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     attestation = db.Column(db.LargeBinary, unique=True, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user = db.relationship('User', backref=backref('fido2credential', cascade='all,delete'))
 
     def __repr__(self):
         return '%s' % self.attestation
 
-class OAuth2Client(db.Model, OAuth2ClientMixin):
-
-    ##### ON DELETE CASCADE !!! DONT WORK
-    
+class OAuth2Client(db.Model, OAuth2ClientMixin): 
     __tablename__ = 'oauth2_client'
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(
-        db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
-    user = db.relationship('User')
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
+    user = db.relationship('User', backref=backref('oauth2_client', cascade='all,delete'))
 
     def json(self):
         json = {}

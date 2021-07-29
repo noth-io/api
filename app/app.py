@@ -27,9 +27,12 @@ app.secret_key = SESSION_SECRET_KEY
 app.config['SESSION_COOKIE_HTTPONLY'] = False
 
 # DB
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///example.sqlite"
-#app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://%s:%s@%s/%s' % (DB_USER, DB_PASSWORD, DB_URL, DB_NAME)
-app.config['SQLALCHEMY_ECHO'] = True
+if ENV == "dev":
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///example.sqlite"
+    app.config['SQLALCHEMY_ECHO'] = True
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://%s:%s@%s/%s' % (DB_USER, DB_PASSWORD, DB_URL, DB_NAME)
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 migrate = Migrate(app, db, render_as_batch=True)

@@ -13,16 +13,7 @@ from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 from config import *
 
 api = Namespace('OAuth2', description='OAuth2 API')
-
 s = URLSafeTimedSerializer(OAUTH2_CONSENT_TOKEN_SECRET)
-
-def current_user():
-    if 'id' in session:
-        uid = session['id']
-        return User.query.get(uid)
-    return None
-
-
 
 @api.route('/authorize')
 class AuthorizationEndpoint(Resource):

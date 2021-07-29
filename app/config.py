@@ -1,6 +1,9 @@
 # coding=utf-8
 import os
 
+# ENV
+ENV = os.getenv('NOTH_API_ENV')
+
 # API
 API_URL = os.getenv('NOTH_API_URL')
 
