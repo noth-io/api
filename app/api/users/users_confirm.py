@@ -1,6 +1,6 @@
 from flask import Blueprint, json
 from flask import Flask, session, request, redirect, abort, Response, json
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, get_jwt
 from database.models import db, User
 from flask_restx import Api
 from flask_restx import Namespace, Resource, fields
@@ -22,6 +22,11 @@ api = Namespace('Confirm User', description='User confirmation API')
 class SendUserConfirmMail(Resource):
     @jwt_required()
     def post(self):
+
+        # Check if correct registration step
+        if get_jwt().get("type") != "register" or get_jwt().get("step") != 0:
+            abort(400)
+
         # Check identity in DB
         current_identity = get_jwt_identity()
         user = User.query.filter_by(username=current_identity).first()
@@ -30,6 +35,7 @@ class SendUserConfirmMail(Resource):
         if user.confirmed is True:
             abort(400, 'user is already confirmed')
 
+        username = user.username
         email = user.email
         firstname = user.firstname
         lastname = user.lastname
@@ -55,14 +61,14 @@ class SendUserConfirmMail(Resource):
         }
         r = requests.post(mailapiurl, headers=headers, data=json.dumps(payload))
 
-        if r.status_code == 201:
-            msg = { "message": "confirmation mail send successfully" }
-            status = 200
-        else:
+        if r.status_code != 201:
             abort(500)
 
-        resp = Response(response=json.dumps(msg), status=status, mimetype="application/json")
-        return resp
+        additional_claims = {"type": "register", "step": 1}
+        register_token = create_access_token(identity=username, additional_claims=additional_claims)
+
+        msg = { "message": "confirmation mail send successfully", "register_token": register_token }
+        return msg
 
 @api.route('/confirm/<token>')
 class CheckUserConfirmMail(Resource):

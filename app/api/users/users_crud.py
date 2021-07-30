@@ -1,5 +1,5 @@
 from flask import Blueprint, json
-from flask import Flask, session, request, redirect, abort, Response, json
+from flask import Flask, session, request, redirect, abort, Response, json, jsonify
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 from database.models import db, User
 from flask_restx import Api
@@ -39,7 +39,13 @@ class Users(Resource):
             else:
                 abort(500)
 
-        return user.json(), 201
+        additional_claims = {"type": "register", "step": 0}
+        register_token = create_access_token(identity=username, additional_claims=additional_claims)
+
+        resp = {}
+        resp["register_token"] = register_token
+        resp["user"] = user.json()
+        return resp, 201
 
 @api.route('/<id>')
 class SingleUsers(Resource):
