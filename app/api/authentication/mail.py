@@ -16,7 +16,8 @@ s = URLSafeTimedSerializer(MAIL_TOKEN_AUTHENTICATION_SECRET)
 
 api = Namespace('Mail', description='Mail authentication API')
 
-mail_authstate = 2
+mail_level = 2
+mail_step = 2
 
 @api.route('')
 class SendAuthenticationMail(Resource):
@@ -24,7 +25,7 @@ class SendAuthenticationMail(Resource):
     def post(self):
 
         # Check if correct authentication step
-        if get_jwt().get("authstep") != mail_authstate:
+        if get_jwt().get("nextstep") != mail_step:
             abort(400)
             
         # Check identity in DB
@@ -54,18 +55,16 @@ class SendAuthenticationMail(Resource):
                 }
             ],
             "subject": "User authentication",
-            "htmlContent": "<html><head></head><body><a href='%s/authentication/mail/%s'>Click here to authenticate</a></body></html>" % (API_URL, token)
+            "htmlContent": "<html><head></head><body><a href='%s/login/mail/%s'>Click here to authenticate</a></body></html>" % (NOTH_UI_URL, token)
         }
         r = requests.post(mailapiurl, headers=headers, data=json.dumps(payload))
 
-        if r.status_code == 201:
-            msg = { "message": "authentication mail send successfully" }
-            status = 200
-        else:
+        if r.status_code != 201:
             abort(500)
 
-        resp = Response(response=json.dumps(msg), status=status, mimetype="application/json")
-        return resp
+        msg = { "message": "authentication mail sent successfully" }
+        return msg
+
 
 @api.route('/<token>')
 class CheckAuthenticationMail(Resource):
@@ -73,7 +72,7 @@ class CheckAuthenticationMail(Resource):
     def get(self, token):
 
         # Check if correct authentication step
-        if get_jwt().get("authstep") != mail_authstate:
+        if get_jwt().get("nextstep") != mail_step:
             abort(400)
 
         # Check identity in DB
@@ -82,20 +81,29 @@ class CheckAuthenticationMail(Resource):
         if not user:
             abort(401, 'invalid user')
 
-        # Define new auth state
-        state = get_jwt().get("state")
-        newstate = state | mail_authstate
-
+        # Check token
         try:
             email = s.loads(token, salt='user-mailauth', max_age=600)
-            if email == user.email:
-                additional_claims = {"state": newstate}
-                msg = create_access_token(identity=user.username, additional_claims=additional_claims)
-                status = 200
-            else:
+            if email != user.email:
                 raise
         except:
             abort(401, 'mail authentication failed')
 
-        resp = Response(response=json.dumps(msg), status=status, mimetype="application/json")
-        return resp
+        # Calculate new auth level
+        old_level = get_jwt().get("current_level")
+        new_level = old_level | mail_level
+        print(new_level)
+
+        # If target level reached (todo : convert to function)
+        if get_jwt().get("target_level") == new_level:
+            # Generate session token
+            additional_claims = {"type": "session", "loa": 1}
+            session_token = create_access_token(identity=user.username, additional_claims=additional_claims)
+            msg = { "authenticated": True, "session_token": session_token }
+
+        else:
+            additional_claims = {"type": "authentication", "target_level": get_jwt().get("target_level"), "nextstep": 4, "current_level": new_level}
+            auth_token = create_access_token(identity=user.username, additional_claims=additional_claims)
+            msg = { "authenticated": False, "auth_token": auth_token }
+
+        return msg

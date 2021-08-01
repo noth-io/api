@@ -7,11 +7,14 @@ from database.models import db, User
 
 api = Namespace('Init', description='Init authentication API')
 
+init_level = 0
+init_step = 0
+
 @api.route('')
 class InitAuthentication(Resource):
     def post(self):
         # TODO check if cookie/header with identity
 
-        additional_claims = {"state": 0, "authstep": 1}
-        access_token = create_access_token(identity='', additional_claims=additional_claims)
-        return jsonify(access_token=access_token)
+        additional_claims = {"type": "authentication", "target_level": 3, "nextstep": 1, "current_level": init_level}
+        auth_token = create_access_token(identity='', additional_claims=additional_claims)
+        return jsonify(auth_token=auth_token)

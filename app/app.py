@@ -1,18 +1,20 @@
 import os
-from flask import Flask, redirect
+from flask import Flask, redirect, jsonify
 from database.models import db
-from flask_jwt_extended import JWTManager
+from flask_jwt_extended import JWTManager, jwt_required, create_access_token
 from flask_cors import CORS
 from flask_migrate import Migrate
 # oauth
 from oauth2 import config_oauth
-from api.oauth2.api import blueprint as oauth2_api
+from api.oauth2.api import blueprint as oauth2_api, api as oapi
 
 # import api
 from api.authentication.api import blueprint as authentication_api
 from api.users.api import blueprint as users_api
 # import config
 from config import *
+
+#from titi import jwt
 
 app = Flask(__name__, static_url_path="")
 app.debug = True
@@ -47,7 +49,7 @@ config_oauth(app)
 
 
 # Setup the Flask-JWT-Extended extension
-jwt_secret_key = os.urandom(32)
+#jwt_secret_key = os.urandom(32)
 app.config["JWT_SECRET_KEY"] = "changeme"
 jwt = JWTManager(app)
 
@@ -60,4 +62,3 @@ app.register_blueprint(oauth2_api)
 @app.route("/")
 def index():    
     return redirect("/index.html")
-

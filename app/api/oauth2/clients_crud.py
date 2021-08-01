@@ -1,6 +1,6 @@
 import time
 from flask import Flask, jsonify, request, abort, Response, json
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, jwt_manager
 from flask import Blueprint
 from flask import current_app as app
 from flask_restx import Namespace, Resource, fields, reqparse

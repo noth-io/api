@@ -5,7 +5,7 @@ import os
 ENV = os.getenv('NOTH_API_ENV')
 
 # API
-API_URL = os.getenv('NOTH_API_URL')
+NOTH_UI_URL = os.getenv('NOTH_UI_URL')
 
 # SESSION
 SESSION_SECRET_KEY = os.getenv('NOTH_API_SESSION_SECRET_KEY')

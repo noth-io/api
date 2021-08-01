@@ -57,7 +57,7 @@ class SendUserConfirmMail(Resource):
                 }
             ],
             "subject": "Account confirmation",
-            "htmlContent": "<html><head></head><body><a href='%s/users/confirm/%s'>Click here to confirm your account</a></body></html>" % (API_URL, token)
+            "htmlContent": "<html><head></head><body><a href='%s/register/confirm/%s'>Click here to confirm your account</a></body></html>" % (NOTH_UI_URL, token)
         }
         r = requests.post(mailapiurl, headers=headers, data=json.dumps(payload))
 
@@ -88,12 +88,13 @@ class CheckUserConfirmMail(Resource):
                 # Update confirmed in DB
                 user.confirmed = True
                 db.session.commit()
-                msg = { "message": "user is confirmed" }
-                status = 200
             else:
                 raise
         except:
             abort(404, "user can't be confirmed")
 
-        resp = Response(response=json.dumps(msg), status=status, mimetype="application/json")
-        return resp
+        additional_claims = {"type": "session", "loa": 1}
+        session_token = create_access_token(identity=user.username, additional_claims=additional_claims)
+
+        msg = { "message": "user is confirmed", "session_token": session_token }
+        return msg
