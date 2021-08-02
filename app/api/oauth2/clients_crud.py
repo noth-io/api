@@ -12,7 +12,7 @@ api = Namespace('Clients', description='OAuth2 Clients CRUD API')
 @api.route('')
 class Clients(Resource):
     # Get all Clients for authenticated user
-    @jwt_required()
+    @jwt_required(locations=["cookies"])
     def get(self):
         # Check identity in DB
         current_identity = get_jwt_identity()

@@ -52,6 +52,7 @@ config_oauth(app)
 #jwt_secret_key = os.urandom(32)
 app.config["JWT_SECRET_KEY"] = "changeme"
 jwt = JWTManager(app)
+app.config["JWT_ACCESS_COOKIE_NAME"] = "session"
 
 # Register blueprints
 app.register_blueprint(authentication_api)

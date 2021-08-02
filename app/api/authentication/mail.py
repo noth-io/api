@@ -1,7 +1,7 @@
 from flask_restx import Namespace, Resource, fields
 from flask import Blueprint, json
 from flask import Flask, session, request, redirect, abort, Response, json
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, decode_token, get_jwt
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, decode_token, get_jwt, set_access_cookies
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 import requests
 from database.models import db, User
@@ -99,8 +99,9 @@ class CheckAuthenticationMail(Resource):
             # Generate session token
             additional_claims = {"type": "session", "loa": 1}
             session_token = create_access_token(identity=user.username, additional_claims=additional_claims)
-            msg = { "authenticated": True, "session_token": session_token }
-
+            message = { "authenticated": True, "session_token": session_token }
+            msg = Response(response=json.dumps(message), status=200, mimetype="application/json")
+            set_access_cookies(msg, session_token)
         else:
             additional_claims = {"type": "authentication", "target_level": get_jwt().get("target_level"), "nextstep": 4, "current_level": new_level}
             auth_token = create_access_token(identity=user.username, additional_claims=additional_claims)
