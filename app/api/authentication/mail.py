@@ -102,6 +102,7 @@ class CheckAuthenticationMail(Resource):
             message = { "authenticated": True, "session_token": session_token }
             msg = Response(response=json.dumps(message), status=200, mimetype="application/json")
             set_access_cookies(msg, session_token)
+            msg.set_cookie("authenticated", "true", secure=True)
         else:
             additional_claims = {"type": "authentication", "target_level": get_jwt().get("target_level"), "nextstep": 4, "current_level": new_level}
             auth_token = create_access_token(identity=user.username, additional_claims=additional_claims)

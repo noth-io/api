@@ -1,5 +1,5 @@
-from flask import Flask, jsonify, request, abort
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, get_jwt
+from flask import Flask, jsonify, request, abort, Response, json
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, get_jwt, set_access_cookies
 from flask import Blueprint
 from flask import current_app as app
 from flask_restx import Namespace, Resource, fields
@@ -37,7 +37,10 @@ class UsernameAuthentication(Resource):
             # Generate session token
             additional_claims = {"type": "session", "loa": 1}
             session_token = create_access_token(identity=user.username, additional_claims=additional_claims)
-            msg = { "authenticated": True, "session_token": session_token }
+            message = { "authenticated": True, "session_token": session_token }
+            msg = Response(response=json.dumps(message), status=200, mimetype="application/json")
+            set_access_cookies(msg, session_token)
+            msg.set_cookie("authenticated", "true", secure=True)
 
         else:
             additional_claims = {"type": "authentication", "target_level": get_jwt().get("target_level"), "nextstep": 2, "current_level": new_level}

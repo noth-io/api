@@ -15,6 +15,6 @@ class InitAuthentication(Resource):
     def post(self):
         # TODO check if cookie/header with identity
 
-        additional_claims = {"type": "authentication", "target_level": 3, "nextstep": 1, "current_level": init_level}
+        additional_claims = {"type": "authentication", "target_level": 1, "nextstep": 1, "current_level": init_level}
         auth_token = create_access_token(identity='', additional_claims=additional_claims)
         return jsonify(auth_token=auth_token)

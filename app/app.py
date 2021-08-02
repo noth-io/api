@@ -1,4 +1,5 @@
 import os
+import datetime
 from flask import Flask, redirect, jsonify
 from database.models import db
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token
@@ -53,6 +54,8 @@ config_oauth(app)
 app.config["JWT_SECRET_KEY"] = "changeme"
 jwt = JWTManager(app)
 app.config["JWT_ACCESS_COOKIE_NAME"] = "session"
+app.config["JWT_COOKIE_SECURE"] = True
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = datetime.timedelta(hours=2)
 
 # Register blueprints
 app.register_blueprint(authentication_api)
