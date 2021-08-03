@@ -1,7 +1,7 @@
 from flask import Blueprint, json
 from flask import Flask, session, request, redirect, abort, Response, json, jsonify
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
-from database.models import db, User
+from database.models import db, User, AuthSequence, AuthMethods
 from flask_restx import Api
 from flask_restx import Namespace, Resource, fields
 
@@ -28,7 +28,7 @@ class Users(Resource):
         firstname = request.form['firstname']
         lastname = request.form['lastname']
 
-        # Insert in DB
+        # Insert User into DB
         user = User(username=username, email=email, firstname=firstname, lastname=lastname)
         db.session.add(user)
         try:
@@ -38,6 +38,24 @@ class Users(Resource):
                 abort(400, 'user with this username or email is already registered')
             else:
                 abort(500)
+
+        # Create default auth sequences
+        sequence = AuthSequence(name="Username only", loa=0, user_id=user.id)
+        db.session.add(sequence)
+        db.session.commit()
+        methods = AuthMethods(auth_sequence_id=sequence.id, auth_method_id=1, step=1)
+        db.session.add(methods)
+        db.session.commit()
+
+        sequence = AuthSequence(name="Username and mail authentication", loa=1, user_id=user.id)
+        db.session.add(sequence)
+        db.session.commit()
+        methods = [AuthMethods(auth_sequence_id=sequence.id, auth_method_id=1, step=1), AuthMethods(auth_sequence_id=sequence.id, auth_method_id=2, step=2)]
+        db.session.add_all(methods)
+        db.session.commit()
+
+        #db.session.add(AuthSequence(name="Username and mail authentication", loa=1, user_id=user.id))
+        #db.session.add(AuthSequence(name="Username and Fido2", loa=2, enabled=False, user_id=user.id))
 
         additional_claims = {"type": "register", "step": 0}
         register_token = create_access_token(identity=username, additional_claims=additional_claims)

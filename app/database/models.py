@@ -38,9 +38,67 @@ class User(db.Model):
     def __repr__(self):
         return '<User %r>' % self.username
     
+### AUTHENTICATION
+class AuthMethods(db.Model):
+    __tablename__ = 'auth_methods'
+
+    auth_sequence_id = db.Column(db.ForeignKey('auth_sequence.id'), primary_key=True)
+    auth_method_id = db.Column(db.ForeignKey('auth_method.id'), primary_key=True)
+    step = db.Column(db.Integer, nullable=False)
+    enabled = db.Column(db.Boolean, nullable=False, default=True)
+    auth_method = db.relationship("AuthMethod")
+
+    def json(self):
+        json = {}
+        json['id'] = self.auth_method.id
+        json['name'] = self.auth_method.name
+        #json['auth_method_level'] = self.auth_method.level
+        #json['auth_method_enabled'] = self.auth_method.enabled
+        json['step'] = self.step
+        json['enabled'] = self.enabled
+        return json
+
+class AuthMethod(db.Model):
+    __tablename__ = 'auth_method'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, unique=True, nullable=False)
+    #enabled = db.Column(db.Boolean, nullable=False, default=True)
+    #level = db.Column(db.Integer, nullable=False)
+
+    def json(self):
+        json = {}
+        json['id'] = self.id
+        json['name'] = self.name
+        #json['level'] = self.level
+        #json['enabled'] = self.enabled
+        return json
+
+class AuthSequence(db.Model):
+    __tablename__ = 'auth_sequence'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, unique=False, nullable=False)
+    enabled = db.Column(db.Boolean, nullable=False, default=True)
+    loa = db.Column(db.Integer, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
+    auth_methods = db.relationship("AuthMethods", cascade="all, delete-orphan")
+    user = db.relationship('User', backref=backref('auth_sequence', cascade='all,delete'))
+
+    def json(self):
+        json = {}
+        json['id'] = self.id
+        json['name'] = self.name
+        json['loa'] = self.loa
+        json['enabled'] = self.enabled
+        json['auth_methods'] = []
+        for auth_method in self.auth_methods:
+            json['auth_methods'].append(auth_method.json())
+        return json
 
 class Fido2Credential(db.Model):
     __tablename__ = 'fido2credential'
+
     id = db.Column(db.Integer, primary_key=True)
     attestation = db.Column(db.LargeBinary, unique=True, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -49,10 +107,12 @@ class Fido2Credential(db.Model):
     def __repr__(self):
         return '%s' % self.attestation
 
+### OAUTH2
 class OAuth2Client(db.Model, OAuth2ClientMixin): 
     __tablename__ = 'oauth2_client'
 
     id = db.Column(db.Integer, primary_key=True)
+    enabled = db.Column(db.Boolean, nullable=False, default=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
     user = db.relationship('User', backref=backref('oauth2_client', cascade='all,delete'))
 
@@ -68,6 +128,7 @@ class OAuth2Client(db.Model, OAuth2ClientMixin):
         json['response_types'] = self.response_types
         json['scope'] = self.scope
         json['token_endpoint_auth_method'] = self.token_endpoint_auth_method
+        json['enabled'] = self.enabled
         return json
 
     def json_with_secret(self):
@@ -83,6 +144,7 @@ class OAuth2Client(db.Model, OAuth2ClientMixin):
         json['response_types'] = self.response_types
         json['scope'] = self.scope
         json['token_endpoint_auth_method'] = self.token_endpoint_auth_method
+        json['enabled'] = self.enabled
         return json
 
 
@@ -102,3 +164,5 @@ class OAuth2Token(db.Model, OAuth2TokenMixin):
     user_id = db.Column(
         db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
     user = db.relationship('User')
+
+

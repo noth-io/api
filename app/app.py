@@ -1,17 +1,18 @@
 import os
 import datetime
 from flask import Flask, redirect, jsonify
-from database.models import db
+from database.models import db, AuthSequence
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token
 from flask_cors import CORS
 from flask_migrate import Migrate
 # oauth
 from oauth2 import config_oauth
 from api.oauth2.api import blueprint as oauth2_api, api as oapi
-
 # import api
 from api.authentication.api import blueprint as authentication_api
 from api.users.api import blueprint as users_api
+from api.auth.api import blueprint as auth_api
+
 # import config
 from config import *
 
@@ -61,8 +62,14 @@ app.config["JWT_ACCESS_TOKEN_EXPIRES"] = datetime.timedelta(hours=2)
 app.register_blueprint(authentication_api)
 app.register_blueprint(users_api)
 app.register_blueprint(oauth2_api)
-
+app.register_blueprint(auth_api)
 
 @app.route("/")
 def index():    
     return redirect("/index.html")
+
+@app.route("/test")
+def test(): 
+    auth_sequence = AuthSequence.query.filter_by(id=2).first()
+    print(auth_sequence.json())
+    return {}
