@@ -5,6 +5,9 @@ from flask import current_app as app
 from flask_restx import Namespace, Resource, fields
 from database.models import db, User
 import datetime
+# import config
+from config import *
+
 api = Namespace('Username', description='Username authentication API')
 
 username_level = 1
@@ -40,7 +43,7 @@ class UsernameAuthentication(Resource):
             message = { "authenticated": True, "session_token": session_token }
             msg = Response(response=json.dumps(message), status=200, mimetype="application/json")
             set_access_cookies(msg, session_token)
-            msg.set_cookie("authenticated", "true", secure=True)
+            msg.set_cookie("authenticated", "true", secure=True, domain=AUTHENTICATED_COOKIE_DOMAIN)
 
         else:
             additional_claims = {"type": "authentication", "target_level": get_jwt().get("target_level"), "nextstep": 2, "current_level": new_level}

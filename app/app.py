@@ -16,8 +16,6 @@ from api.auth.api import blueprint as auth_api
 # import config
 from config import *
 
-#from titi import jwt
-
 app = Flask(__name__, static_url_path="")
 app.debug = True
 
@@ -59,7 +57,7 @@ app.config["JWT_COOKIE_SECURE"] = True
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = datetime.timedelta(hours=2)
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = datetime.timedelta(hours=2)
 if ENV != "dev":
-    app.config["JWT_COOKIE_DOMAIN"] = JWT_COOKIE_DOMAIN
+    app.config["AUTHENTICATED_COOKIE_DOMAIN"] = AUTHENTICATED_COOKIE_DOMAIN
 
 # Register blueprints
 app.register_blueprint(authentication_api)

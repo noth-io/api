@@ -39,24 +39,6 @@ class Users(Resource):
             else:
                 abort(500)
 
-        # Create default auth sequences
-        sequence = AuthSequence(name="Username only", loa=0, user_id=user.id)
-        db.session.add(sequence)
-        db.session.commit()
-        methods = AuthMethods(auth_sequence_id=sequence.id, auth_method_id=1, step=1)
-        db.session.add(methods)
-        db.session.commit()
-
-        sequence = AuthSequence(name="Username and mail authentication", loa=1, user_id=user.id)
-        db.session.add(sequence)
-        db.session.commit()
-        methods = [AuthMethods(auth_sequence_id=sequence.id, auth_method_id=1, step=1), AuthMethods(auth_sequence_id=sequence.id, auth_method_id=2, step=2)]
-        db.session.add_all(methods)
-        db.session.commit()
-
-        #db.session.add(AuthSequence(name="Username and mail authentication", loa=1, user_id=user.id))
-        #db.session.add(AuthSequence(name="Username and Fido2", loa=2, enabled=False, user_id=user.id))
-
         additional_claims = {"type": "register", "step": 0}
         register_token = create_access_token(identity=username, additional_claims=additional_claims)
 
