@@ -3,7 +3,6 @@ from flask_restx import Namespace, Resource, fields
 from flask import Blueprint
 from .users_crud import api as users_crud
 from .users_confirm import api as users_confirm
-from .users_register_fido2 import api as users_register_fido2
 
 # Init API
 blueprint = Blueprint('Users API', __name__, url_prefix='/users')
@@ -16,4 +15,3 @@ api = Api(blueprint,
 # Add namescapes
 api.add_namespace(users_crud, path='/')
 api.add_namespace(users_confirm, path='/')
-api.add_namespace(users_register_fido2, path='/')

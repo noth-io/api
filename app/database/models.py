@@ -108,6 +108,7 @@ class AuthSequence(db.Model):
             json['auth_methods'].append(auth_method.json())
         return json
 
+### CREDENTIALS
 class Fido2Credential(db.Model):
     __tablename__ = 'fido2credential'
 
@@ -118,6 +119,12 @@ class Fido2Credential(db.Model):
 
     def __repr__(self):
         return '%s' % self.attestation
+
+    def json(self):
+        json = {}
+        json['id'] = self.id
+        json['attestation'] = self.attestation
+        return json
 
 ### OAUTH2
 class OAuth2Client(db.Model, OAuth2ClientMixin): 

@@ -33,7 +33,6 @@ class UsernameAuthentication(Resource):
         # Calculate new auth level
         old_level = get_jwt().get("current_level")
         new_level = old_level | username_level
-        print(new_level)
 
         # If target level reached (todo : convert to function)
         if get_jwt().get("target_level") == new_level:
@@ -43,7 +42,6 @@ class UsernameAuthentication(Resource):
             message = { "authenticated": True, "session_token": session_token }
             msg = Response(response=json.dumps(message), status=200, mimetype="application/json")
             set_access_cookies(msg, session_token)
-            print(AUTHENTICATED_COOKIE_DOMAIN)
             msg.set_cookie("authenticated", "true", secure=True, domain=AUTHENTICATED_COOKIE_DOMAIN)
 
         else:

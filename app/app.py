@@ -12,6 +12,7 @@ from api.oauth2.api import blueprint as oauth2_api, api as oapi
 from api.authentication.api import blueprint as authentication_api
 from api.users.api import blueprint as users_api
 from api.auth.api import blueprint as auth_api
+from api.credentials.api import blueprint as creds_api
 
 # import config
 from config import *
@@ -23,7 +24,7 @@ app.debug = True
 CORS(app, supports_credentials=True)
 
 # Secret key for sessions
-app.secret_key = SESSION_SECRET_KEY
+#app.secret_key = SESSION_SECRET_KEY
 #app.config['SESSION_COOKIE_SAMESITE'] = "None"
 #app.config['SESSION_COOKIE_SECURE'] = "True"
 app.config['SESSION_COOKIE_HTTPONLY'] = False
@@ -64,13 +65,9 @@ app.register_blueprint(authentication_api)
 app.register_blueprint(users_api)
 app.register_blueprint(oauth2_api)
 app.register_blueprint(auth_api)
+app.register_blueprint(creds_api)
 
 @app.route("/")
 def index():    
     return redirect("/index.html")
 
-@app.route("/test")
-def test(): 
-    auth_sequence = AuthSequence.query.filter_by(id=2).first()
-    print(auth_sequence.json())
-    return {}
