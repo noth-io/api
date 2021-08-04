@@ -1,6 +1,7 @@
 import time
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import backref
+from sqlalchemy import MetaData
 from authlib.integrations.sqla_oauth2 import (
     OAuth2ClientMixin,
     OAuth2AuthorizationCodeMixin,
@@ -8,7 +9,16 @@ from authlib.integrations.sqla_oauth2 import (
 )
 from flask import json
 
-db = SQLAlchemy()
+convention = {
+    "ix": 'ix_%(column_0_label)s',
+    "uq": "uq_%(table_name)s_%(column_0_name)s",
+    "ck": "ck_%(table_name)s_%(constraint_name)s",
+    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+    "pk": "pk_%(table_name)s"
+}
+metadata = MetaData(naming_convention=convention)
+
+db = SQLAlchemy(metadata=metadata)
 
 class User(db.Model):
     __tablename__ = 'user'
@@ -18,6 +28,7 @@ class User(db.Model):
     firstname = db.Column(db.String, nullable=False)
     lastname = db.Column(db.String, nullable=False)
     confirmed = db.Column(db.Boolean, nullable=False, default=False)
+    isadmin = db.Column(db.Boolean, nullable=False, default=False)
 
     def json (self):
         json = {}
@@ -27,6 +38,7 @@ class User(db.Model):
         json['firstname'] = self.firstname
         json['lastname'] = self.lastname
         json['confirmed'] = self.confirmed
+        json['isadmin'] = self.isadmin
         return json
 
     def __str__(self):
@@ -81,9 +93,9 @@ class AuthSequence(db.Model):
     name = db.Column(db.String, unique=False, nullable=False)
     enabled = db.Column(db.Boolean, nullable=False, default=True)
     loa = db.Column(db.Integer, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
+    #user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
     auth_methods = db.relationship("AuthMethods", cascade="all, delete-orphan")
-    user = db.relationship('User', backref=backref('auth_sequence', cascade='all,delete'))
+    #user = db.relationship('User', backref=backref('auth_sequence', cascade='all,delete'))
 
     def json(self):
         json = {}
