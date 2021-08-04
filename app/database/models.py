@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import backref
 from sqlalchemy import MetaData
@@ -115,6 +116,9 @@ class Fido2Credential(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     attestation = db.Column(db.LargeBinary, unique=True, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    enabled = db.Column(db.Boolean, nullable=False, default=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.now())
+
     user = db.relationship('User', backref=backref('fido2credential', cascade='all,delete'))
 
     def __repr__(self):
