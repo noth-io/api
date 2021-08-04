@@ -52,6 +52,12 @@ class Fido2RegisterBegin(Resource):
         if not user:
             abort(401)
 
+        # Check if Android with user agent
+        if "Android" in request.headers.get('User-Agent'):
+            authenticator_attachment = "platform"
+        else:
+            authenticator_attachment = "cross-platform"
+
         registration_data, state = server.register_begin(
             {
                 "id": bytes(user.id),
@@ -61,8 +67,8 @@ class Fido2RegisterBegin(Resource):
             },
             credentials,
             user_verification="discouraged",
-            authenticator_attachment="cross-platform",
-            resident_key="True"
+            authenticator_attachment=authenticator_attachment,
+            resident_key="False"
         )
 
         #session["state"] = state
