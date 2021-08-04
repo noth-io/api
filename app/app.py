@@ -58,7 +58,8 @@ app.config["JWT_ACCESS_COOKIE_NAME"] = "session"
 app.config["JWT_COOKIE_SECURE"] = True
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = datetime.timedelta(hours=2)
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = datetime.timedelta(hours=2)
-app.config["JWT_COOKIE_DOMAIN"] = 
+if ENV != "dev":
+    app.config["JWT_COOKIE_DOMAIN"] = JWT_COOKIE_DOMAIN
 
 # Register blueprints
 app.register_blueprint(authentication_api)

@@ -29,7 +29,7 @@ class Clients(Resource):
         return resp
 
     # Create client
-    @jwt_required()
+    @jwt_required(locations=["cookies"])
     def post(self):
         # Check identity in DB
         current_identity = get_jwt_identity()
@@ -67,7 +67,7 @@ class Clients(Resource):
 @api.route('/<id>')
 class SingleClient(Resource):
     # Delete client
-    @jwt_required()
+    @jwt_required(locations=["cookies"])
     def delete(self, id):
         # Check identity in DB
         current_identity = get_jwt_identity()
@@ -88,7 +88,7 @@ class SingleClient(Resource):
         return msg
 
     # Get client
-    @jwt_required()
+    @jwt_required(locations=["cookies"])
     def get(self, id):
         # Check identity in DB
         current_identity = get_jwt_identity()
