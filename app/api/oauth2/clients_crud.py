@@ -12,7 +12,7 @@ api = Namespace('Clients', description='OAuth2 Clients CRUD API')
 @api.route('')
 class Clients(Resource):
     # Get all Clients for authenticated user
-    @jwt_required(locations=["cookies"])
+    @jwt_required(locations=["cookies", "headers"])
     def get(self):
         # Check identity in DB
         current_identity = get_jwt_identity()
@@ -29,7 +29,7 @@ class Clients(Resource):
         return resp
 
     # Create client
-    @jwt_required(locations=["cookies"])
+    @jwt_required(locations=["cookies", "headers"])
     def post(self):
         # Check identity in DB
         current_identity = get_jwt_identity()
@@ -67,7 +67,7 @@ class Clients(Resource):
 @api.route('/<id>')
 class SingleClient(Resource):
     # Delete client
-    @jwt_required(locations=["cookies"])
+    @jwt_required(locations=["cookies", "headers"])
     def delete(self, id):
         # Check identity in DB
         current_identity = get_jwt_identity()
@@ -86,9 +86,53 @@ class SingleClient(Resource):
 
         msg = { "message": "client successfully deleted" }
         return msg
+   
+    # Update client
+    @jwt_required(locations=["cookies", "headers"])
+    def put(self, id):
+        # Check identity in DB
+        current_identity = get_jwt_identity()
+        user = User.query.filter_by(username=current_identity).first()
+        if not user:
+            abort(401, 'invalid user')
+
+        # Parse and check request
+        parser = reqparse.RequestParser(bundle_errors=True)
+        parser.add_argument('id', location='json', required=True)
+        parser.add_argument('client_id', location='json', required=True)
+        parser.add_argument('client_id_issued_at', location='json', required=True)
+        parser.add_argument('client_name', location='json', required=True)
+        parser.add_argument('client_uri', location='json', required=True)
+        parser.add_argument('grant_types', type=list, location='json', required=True)
+        parser.add_argument('redirect_uris', type=list, location='json', required=True)
+        parser.add_argument('response_types', type=list, location='json', required=True)
+        parser.add_argument('scope', location='json', required=True)
+        parser.add_argument('token_endpoint_auth_method', location='json', required=True)
+        parser.add_argument('enabled', location='json', required=True)
+
+        # Get client from DB
+        client = OAuth2Client.query.filter_by(id=id, user_id=user.id).first()
+        if not client:
+            abort(404, 'client not found')
+
+        # Build client object
+        client_metadata = parser.parse_args()
+        client_enabled = client_metadata['enabled']
+        client_metadata.pop('id')
+        client_metadata.pop('client_id')
+        client_metadata.pop('client_id_issued_at')
+        client_metadata.pop('enabled')
+  
+        client.set_client_metadata(client_metadata)
+        client.enabled = bool(client_enabled)
+
+        # Update in DB
+        db.session.commit()
+
+        return client.json()
 
     # Get client
-    @jwt_required(locations=["cookies"])
+    @jwt_required(locations=["cookies", "headers"])
     def get(self, id):
         # Check identity in DB
         current_identity = get_jwt_identity()
