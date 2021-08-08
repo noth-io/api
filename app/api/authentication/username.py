@@ -43,6 +43,7 @@ class UsernameAuthentication(Resource):
             msg = Response(response=json.dumps(message), status=200, mimetype="application/json")
             set_access_cookies(msg, session_token)
             msg.set_cookie("authenticated", "true", secure=True, domain=AUTHENTICATED_COOKIE_DOMAIN)
+            msg.set_cookie("username", username, secure=True, domain=AUTHENTICATED_COOKIE_DOMAIN)
 
         else:
             additional_claims = {"type": "authentication", "target_level": get_jwt().get("target_level"), "nextstep": 2, "current_level": new_level}

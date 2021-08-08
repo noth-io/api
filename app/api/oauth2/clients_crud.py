@@ -124,8 +124,10 @@ class SingleClient(Resource):
         client_metadata.pop('enabled')
   
         client.set_client_metadata(client_metadata)
+        print(client_enabled)
         client.enabled = bool(client_enabled)
 
+        print(client)
         # Update in DB
         db.session.commit()
 
