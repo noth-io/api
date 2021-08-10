@@ -124,8 +124,8 @@ def config_oauth(app):
     authorization.register_grant(AuthorizationCodeGrant, [
         OpenIDCode(require_nonce=True),
     ])
-    authorization.register_grant(ImplicitGrant)
-    authorization.register_grant(HybridGrant)
+    #authorization.register_grant(ImplicitGrant)
+    #authorization.register_grant(HybridGrant)
 
     # protect resource
     bearer_cls = create_bearer_token_validator(db.session, OAuth2Token)
