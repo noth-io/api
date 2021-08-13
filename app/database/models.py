@@ -94,6 +94,7 @@ class AuthSequence(db.Model):
     name = db.Column(db.String, unique=False, nullable=False)
     enabled = db.Column(db.Boolean, nullable=False, default=True)
     loa = db.Column(db.Integer, nullable=False)
+    is_default = db.Column(db.Boolean, nullable=False, default=False)
     #user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
     auth_methods = db.relationship("AuthMethods", cascade="all, delete-orphan")
     #user = db.relationship('User', backref=backref('auth_sequence', cascade='all,delete'))
