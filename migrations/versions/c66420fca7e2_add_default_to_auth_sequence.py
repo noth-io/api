@@ -39,8 +39,8 @@ def upgrade():
     )
     op.bulk_insert(auth_sequence_table,
         [
-            {'name':'Username only', 'loa': 0, 'enabled': True},
-            {'name':'Username + mail', 'loa': 2, 'enabled': True},
+            {'name':'Username only', 'loa': 0, 'is_default': False, 'enabled': True},
+            {'name':'Username + mail', 'loa': 2, 'is_default': False, 'enabled': True},
             {'name':'Username + FIDO2 without PIN', 'loa': 2, 'is_default': True, 'enabled': True}
         ]
     )
