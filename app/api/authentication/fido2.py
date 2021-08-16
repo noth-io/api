@@ -1,6 +1,6 @@
 from __future__ import print_function, absolute_import, unicode_literals
 from flask_restx import Namespace, Resource, fields
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, json
 from flask import current_app as app
 from fido2.webauthn import PublicKeyCredentialRpEntity
 from fido2.client import ClientData
@@ -8,8 +8,9 @@ from fido2.server import Fido2Server
 from fido2.ctap2 import AttestationObject, AuthenticatorData, AttestedCredentialData
 from fido2 import cbor
 from flask import Flask, session, request, redirect, abort, Response
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, get_jwt
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, get_jwt, set_access_cookies
 from database.models import db, User, Fido2Credential
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 
 # import config
 from config import *
@@ -20,8 +21,10 @@ api = Namespace('Fido2Authentication', description='Fido 2 authentication API')
 rp = PublicKeyCredentialRpEntity(FIDO2_RP, FIDO2_NAME)
 server = Fido2Server(rp)
 credentials = []
+s = URLSafeTimedSerializer(FIDO2STATE_SECRET)
 
-fido2_authstate = 4
+fido2_level = 3
+fido2_step = 3
 
 @api.route('/begin')
 class Fido2AuthenticationBegin(Resource):
@@ -29,7 +32,7 @@ class Fido2AuthenticationBegin(Resource):
     def post(self):
 
         # Check if correct authentication step
-        if get_jwt().get("authstep") != fido2_authstate:
+        if get_jwt().get("nextstep") != fido2_step:
             abort(400)
 
         # Check identity in DB
@@ -47,13 +50,17 @@ class Fido2AuthenticationBegin(Resource):
             credentials.append(AttestedCredentialData(cred.attestation))
 
         auth_data, state = server.authenticate_begin(credentials,user_verification="discouraged")
-        print(state)
-        session["state"] = state
-        print(session)
+        #print(state)
+        #session["state"] = state
+        #print(session)
         print("\n\n\n\n")
         print(auth_data)
         print("\n\n\n\n")
-        return Response(response=cbor.encode(auth_data))
+
+        msg = Response(response=cbor.encode(auth_data))
+        msg.set_cookie("fido2auth", s.dumps(state, salt='fido2auth'), secure=True)
+
+        return msg
 
 
 @api.route('/complete')
@@ -62,7 +69,7 @@ class Fido2AuthenticationComplete(Resource):
     def post(self):
 
         # Check if correct authentication step
-        if get_jwt().get("authstep") != fido2_authstate:
+        if get_jwt().get("nextstep") != fido2_step:
             abort(400)
             
         # Check identity in DB
@@ -87,8 +94,10 @@ class Fido2AuthenticationComplete(Resource):
         print("clientData", client_data)
         print("AuthenticatorData", auth_data)
 
+        state = s.loads(request.cookies.get('fido2auth'), salt='fido2auth', max_age=60)
+
         server.authenticate_complete(
-            session.pop("state"),
+            state,
             credentials,
             credential_id,
             client_data,
@@ -97,9 +106,22 @@ class Fido2AuthenticationComplete(Resource):
         )
 
         # Define new auth state
-        state = get_jwt().get("state")
-        newstate = state | fido2_authstate
+        #state = get_jwt().get("state")
+        #newstate = state | fido2_authstate
 
-        additional_claims = {"state": newstate}
-        access_token = create_access_token(identity=current_identity, additional_claims=additional_claims)
-        return jsonify(access_token=access_token)
+        #additional_claims = {"state": newstate}
+        #access_token = create_access_token(identity=current_identity, additional_claims=additional_claims)
+        #return jsonify(access_token=access_token)
+        
+        ### TEMPORARY
+        # Generate session token
+        additional_claims = {"type": "session", "loa": 3}
+        session_token = create_access_token(identity=user.username, additional_claims=additional_claims)
+        message = { "authenticated": True, "session_token": session_token }
+        msg = Response(response=json.dumps(message), status=200, mimetype="application/json")
+        set_access_cookies(msg, session_token)
+        msg.set_cookie("authenticated", "true", secure=True, domain=AUTHENTICATED_COOKIE_DOMAIN)
+        msg.set_cookie("username", user.username, secure=True, domain=AUTHENTICATED_COOKIE_DOMAIN)
+        msg.set_cookie("fido2auth", "", secure=True, expires=0)
+
+        return msg

@@ -15,12 +15,12 @@ from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 from config import *
 
 api = Namespace('Fido 2 Register', description='Fido 2 register API')
-s = URLSafeTimedSerializer(FIDO2STATE_SECRET)
 
 # Fido 2 variables
 rp = PublicKeyCredentialRpEntity(FIDO2_RP, FIDO2_NAME)
 server = Fido2Server(rp)
 credentials = []
+s = URLSafeTimedSerializer(FIDO2STATE_SECRET)
 
 @api.route('')
 class FIDO2Creds(Resource):

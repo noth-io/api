@@ -129,6 +129,9 @@ class Fido2Credential(db.Model):
         json = {}
         json['id'] = self.id
         json['attestation'] = self.attestation
+        json['enabled'] = self.enabled
+        json['user_id'] = self.user_id
+
         return json
 
 ### OAUTH2
