@@ -41,12 +41,6 @@ class Fido2AuthenticationBegin(Resource):
         if not user:
             abort(401, 'invalid user')
 
-        # Check if Android with user agent
-        if "Android" in request.headers.get('User-Agent'):
-            authenticator_attachment = "platform"
-        else:
-            authenticator_attachment = "cross-platform"
-
         # Get credential from DB
         user_creds = Fido2Credential.query.filter_by(user_id=user.id).all()
         print(user_creds)
@@ -55,7 +49,7 @@ class Fido2AuthenticationBegin(Resource):
         for cred in user_creds:
             credentials.append(AttestedCredentialData(cred.attestation))
 
-        auth_data, state = server.authenticate_begin(credentials,user_verification="discouraged",authenticator_attachment=authenticator_attachment)
+        auth_data, state = server.authenticate_begin(credentials,user_verification="discouraged")
         #print(state)
         #session["state"] = state
         #print(session)
