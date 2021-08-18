@@ -27,9 +27,10 @@ class Users(Resource):
         email = request.form['email']
         firstname = request.form['firstname']
         lastname = request.form['lastname']
+        phone = request.form['phone']
 
         # Insert User into DB
-        user = User(username=username, email=email, firstname=firstname, lastname=lastname)
+        user = User(username=username, email=email, firstname=firstname, lastname=lastname, phone=phone)
         db.session.add(user)
         try:
             db.session.commit()

@@ -5,6 +5,7 @@ from .mail import api as mail
 from .username import api as username
 from .fido2 import api as fido2
 from .init import api as init
+from .otpsms import api as otpsms
 
 # Init API
 blueprint = Blueprint('Authentication API', __name__, url_prefix='/authentication')
@@ -19,3 +20,4 @@ api.add_namespace(init, path='/init')
 api.add_namespace(username, path='/username')
 api.add_namespace(mail, path='/mail')
 api.add_namespace(fido2, path='/fido2')
+api.add_namespace(otpsms, path='/otpsms')

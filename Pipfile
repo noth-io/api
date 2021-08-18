@@ -18,6 +18,7 @@ requests = "*"
 itsdangerous = "*"
 psycopg2-binary = "*"
 Authlib = "*"
+vonage = "*"
 
 [scripts]
 flask = "flask run --cert=adhoc --host=0.0.0.0"

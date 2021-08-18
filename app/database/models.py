@@ -28,6 +28,7 @@ class User(db.Model):
     email = db.Column(db.String, unique=True, nullable=False)
     firstname = db.Column(db.String, nullable=False)
     lastname = db.Column(db.String, nullable=False)
+    phone = db.Column(db.Unicode(255), unique=True, nullable=False)
     confirmed = db.Column(db.Boolean, nullable=False, default=False)
     isadmin = db.Column(db.Boolean, nullable=False, default=False)
 
@@ -38,6 +39,7 @@ class User(db.Model):
         json['email'] = self.email
         json['firstname'] = self.firstname
         json['lastname'] = self.lastname
+        json['phone'] = self.phone
         json['confirmed'] = self.confirmed
         json['isadmin'] = self.isadmin
         return json
