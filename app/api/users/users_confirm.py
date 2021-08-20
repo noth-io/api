@@ -41,7 +41,7 @@ class SendUserConfirmMail(Resource):
         lastname = user.lastname
 
         # Generate token
-        token = s.dumps(email, salt='user-confirm')
+        token = s.dumps(user.json(), salt='user-confirm')
 
         # Build mail API Call
         headers = { "accept": "application/json", "api-key": mailapikey, "content-type": "application/json" }
@@ -72,20 +72,22 @@ class SendUserConfirmMail(Resource):
 
 @api.route('/confirm/<token>')
 class CheckUserConfirmMail(Resource):
-    @jwt_required()
+    #@jwt_required()
     def get(self, token):
         # Check identity in DB
-        current_identity = get_jwt_identity()
-        user = User.query.filter_by(username=current_identity).first()
-        if not user:
-            abort(401, 'invalid user')
-        if user.confirmed is True:
-            abort(400, 'user is already confirmed')
+        #current_identity = get_jwt_identity()
+        #user = User.query.filter_by(username=current_identity).first()
+        #if not user:
+        #    abort(401, 'invalid user')
+        #if user.confirmed is True:
+        #    abort(400, 'user is already confirmed')
 
         try:
-            email = s.loads(token, salt='user-confirm', max_age=600)
-            if email == user.email:
+            userToken = s.loads(token, salt='user-confirm', max_age=600)
+            user = User.query.filter_by(username=userToken["username"]).first()
+            if user:
                 # Update confirmed in DB
+                # Got to SMS OTP confirmation
                 user.confirmed = True
                 db.session.commit()
             else:
