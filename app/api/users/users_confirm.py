@@ -6,6 +6,8 @@ from flask_restx import Api
 from flask_restx import Namespace, Resource, fields
 import requests
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
+import math, random
+import vonage
 
 # import config
 from config import *
@@ -18,10 +20,21 @@ s = URLSafeTimedSerializer(MAIL_TOKEN_CONFIRM_SECRET)
 # Init API
 api = Namespace('Confirm User', description='User confirmation API')
 
-@api.route('/confirm')
+# Vonage
+client = vonage.Client(key="f6756e22", secret="S2F8wPqPWqdiLsJH")
+sms = vonage.Sms(client)
+
+def generateOTP() :
+    digits = "0123456789"
+    OTP = ""
+    for i in range(6) :
+        OTP += digits[math.floor(random.random() * 10)]
+    return OTP
+
+@api.route('/confirm/email')
 class SendUserConfirmMail(Resource):
     @jwt_required()
-    def post(self):
+    def get(self):
 
         # Check if correct registration step
         if get_jwt().get("type") != "register" or get_jwt().get("step") != 0:
@@ -70,33 +83,53 @@ class SendUserConfirmMail(Resource):
         msg = { "message": "confirmation mail send successfully", "register_token": register_token }
         return msg
 
-@api.route('/confirm/<token>')
+@api.route('/confirm/email/<token>')
 class CheckUserConfirmMail(Resource):
-    #@jwt_required()
-    def get(self, token):
-        # Check identity in DB
-        #current_identity = get_jwt_identity()
-        #user = User.query.filter_by(username=current_identity).first()
-        #if not user:
-        #    abort(401, 'invalid user')
-        #if user.confirmed is True:
-        #    abort(400, 'user is already confirmed')
-
+    def post(self, token):
+        print(token)
         try:
             userToken = s.loads(token, salt='user-confirm', max_age=600)
+            print(userToken["username"])
             user = User.query.filter_by(username=userToken["username"]).first()
             if user:
                 # Update confirmed in DB
                 # Got to SMS OTP confirmation
-                user.confirmed = True
-                db.session.commit()
+                #user.confirmed = True
+                #db.session.commit()
+                additional_claims = {"type": "register", "step": 2}
+                register_token = create_access_token(identity=user.username, additional_claims=additional_claims)
+                msg = { "message": "user email is confirmed", "register_token": register_token }
             else:
                 raise
         except:
             abort(404, "user can't be confirmed")
 
-        additional_claims = {"type": "session", "loa": 1}
-        session_token = create_access_token(identity=user.username, additional_claims=additional_claims)
+        #additional_claims = {"type": "session", "loa": 1}
+        #session_token = create_access_token(identity=user.username, additional_claims=additional_claims)
+        #msg = { "message": "user is confirmed", "session_token": session_token }
+        return msg
 
-        msg = { "message": "user is confirmed", "session_token": session_token }
+@api.route('/confirm/phone')
+class SendPhoneConfirm(Resource):
+    @jwt_required()
+    def get(self):
+        # Check if correct registration step
+        if get_jwt().get("type") != "register" or get_jwt().get("step") != 2:
+            abort(400)
+
+        # Check identity in DB
+        current_identity = get_jwt_identity()
+        user = User.query.filter_by(username=current_identity).first()
+        if not user:
+            abort(401, 'invalid user')
+        if user.confirmed is True:
+            abort(400, 'user is already confirmed')
+
+        # TODO --> send OTP
+        # Geberate OTP
+        print(generateOTP())
+
+        additional_claims = {"type": "register", "step": 3}
+        register_token = create_access_token(identity=user.username, additional_claims=additional_claims)
+        msg = { "message": "confirmation OTP SMS send successfully", "register_token": register_token }
         return msg
