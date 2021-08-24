@@ -3,6 +3,7 @@ from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import backref
 from sqlalchemy import MetaData
+from sqlalchemy.sql import func
 from authlib.integrations.sqla_oauth2 import (
     OAuth2ClientMixin,
     OAuth2AuthorizationCodeMixin,
@@ -120,7 +121,7 @@ class Fido2Credential(db.Model):
     attestation = db.Column(db.LargeBinary, unique=True, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     enabled = db.Column(db.Boolean, nullable=False, default=True)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.now())
+    created_at = db.Column(db.DateTime, nullable=False, default=func.now())
 
     user = db.relationship('User', backref=backref('fido2credential', cascade='all,delete'))
 
@@ -195,3 +196,23 @@ class OAuth2Token(db.Model, OAuth2TokenMixin):
     user = db.relationship('User')
 
 
+### OTP
+
+class OTPCode(db.Model):
+    __tablename__ = 'otp_code'
+
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.Integer, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    created_at = db.Column(db.DateTime, nullable=False, default=func.now())
+
+    user = db.relationship('User', backref=backref('otp_code', cascade='all,delete'))
+
+    def json(self):
+        json = {}
+        json['id'] = self.id
+        json['code'] = self.code
+        json['user_id'] = self.user_id
+        json['created_at'] = self.created_at
+
+        return json

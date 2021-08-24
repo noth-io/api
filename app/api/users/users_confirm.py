@@ -1,13 +1,14 @@
 from flask import Blueprint, json
 from flask import Flask, session, request, redirect, abort, Response, json
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, get_jwt
-from database.models import db, User
+from database.models import db, User, OTPCode
 from flask_restx import Api
-from flask_restx import Namespace, Resource, fields
+from flask_restx import Namespace, Resource, fields, reqparse
 import requests
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 import math, random
 import vonage
+from datetime import datetime, timedelta
 
 # import config
 from config import *
@@ -86,7 +87,6 @@ class SendUserConfirmMail(Resource):
 @api.route('/confirm/email/<token>')
 class CheckUserConfirmMail(Resource):
     def post(self, token):
-        print(token)
         try:
             userToken = s.loads(token, salt='user-confirm', max_age=600)
             print(userToken["username"])
@@ -102,7 +102,7 @@ class CheckUserConfirmMail(Resource):
             else:
                 raise
         except:
-            abort(404, "user can't be confirmed")
+            abort(404, "user email can't be confirmed")
 
         #additional_claims = {"type": "session", "loa": 1}
         #session_token = create_access_token(identity=user.username, additional_claims=additional_claims)
@@ -110,7 +110,8 @@ class CheckUserConfirmMail(Resource):
         return msg
 
 @api.route('/confirm/phone')
-class SendPhoneConfirm(Resource):
+class ConfirmPhone(Resource):
+    # Generate and send OTP SMS code
     @jwt_required()
     def get(self):
         # Check if correct registration step
@@ -125,11 +126,57 @@ class SendPhoneConfirm(Resource):
         if user.confirmed is True:
             abort(400, 'user is already confirmed')
 
-        # TODO --> send OTP
-        # Geberate OTP
-        print(generateOTP())
+        # Generate and store OTP code
+        otpcode = OTPCode(code=generateOTP(), user_id=user.id)
+        db.session.add(otpcode)
+        db.session.commit()
+
+        # Send OTP code (DISABLED FOR DEV)
+        if ENV == "dev":
+            print(otpcode.code)
+        else:
+            otpsms = sms.send_message(
+                {
+                    "from": "Noth",
+                    "to": user.phone,
+                    "text": "Your OTP code is %s" % otpcode.code,
+                }
+            )
+
+            if otpsms["messages"][0]["status"] != "0":
+                abort(500)
 
         additional_claims = {"type": "register", "step": 3}
         register_token = create_access_token(identity=user.username, additional_claims=additional_claims)
-        msg = { "message": "confirmation OTP SMS send successfully", "register_token": register_token }
+        msg = { "message": "confirmation OTP SMS sent successfully", "register_token": register_token }
+        return msg
+
+    # Validate OTP SMS code
+    @jwt_required()
+    def post(self):
+        # Check if correct registration step
+        if get_jwt().get("type") != "register" or get_jwt().get("step") != 3:
+            abort(400)
+
+        # Check identity in DB
+        current_identity = get_jwt_identity()
+        user = User.query.filter_by(username=current_identity).first()
+        if not user:
+            abort(401, 'invalid user')
+        if user.confirmed is True:
+            abort(400, 'user is already confirmed')
+
+        # Parse and check request
+        parser = reqparse.RequestParser(bundle_errors=True)
+        parser.add_argument('otpcode', location='json', type=int, required=True)
+        reqbody = parser.parse_args()
+
+        # Check if valid OTP code
+        otpcode = OTPCode.query.filter_by(user_id=user.id).order_by(OTPCode.created_at.desc()).first()
+        if not otpcode or otpcode.code != reqbody.otpcode or otpcode.created_at < datetime.now() - timedelta(seconds=int(OTP_LIFETIME)):
+            abort(401, 'invalid OTP code')
+
+        additional_claims = {"type": "register", "step": 4}
+        register_token = create_access_token(identity=user.username, additional_claims=additional_claims)
+        msg = { "message": "your mobile phone is confirmed", "register_token": register_token }
         return msg
