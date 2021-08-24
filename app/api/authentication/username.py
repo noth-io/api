@@ -15,12 +15,12 @@ username_step = 1
 
 @api.route('')
 class UsernameAuthentication(Resource):
-    @jwt_required(optional=True)
+    #@jwt_required(optional=True)
     def post(self):
 
         # Check if correct authentication step
-        if get_jwt().get("nextstep") != username_step:
-            abort(400)
+        #if get_jwt().get("nextstep") != username_step:
+        #    abort(400)
         
         # Get username from request
         username = request.json.get("username", None)
@@ -31,16 +31,21 @@ class UsernameAuthentication(Resource):
             abort(401, 'invalid user')
 
         # Calculate new auth level
-        old_level = get_jwt().get("current_level")
-        new_level = old_level | username_level
+        #old_level = get_jwt().get("current_level")
+        #new_level = old_level | username_level
 
         ##### TEMPORARY
         ## NEED TO IMPLEMENT AUTH SEQUENCE/METHODS/LEVELS
         if Fido2Credential.query.filter_by(user_id=user.id).first():
-            additional_claims = {"type": "authentication", "target_level": 5, "nextstep": 3, "current_level": new_level}
+            #additional_claims = {"type": "authentication", "target_level": 5, "nextstep": 3, "current_level": new_level}
+            additional_claims = {"type": "authentication", "nextstep": 4, "current_level": 1}
             auth_token = create_access_token(identity=user.username, additional_claims=additional_claims)
             msg = { "authenticated": False, "auth_token": auth_token }
         else:
+            additional_claims = {"type": "authentication", "nextstep": 2, "current_level": 1}
+            auth_token = create_access_token(identity=user.username, additional_claims=additional_claims)
+            msg = { "authenticated": False, "auth_token": auth_token }
+        """
             # Generate session token
             additional_claims = {"type": "session", "loa": 1}
             session_token = create_access_token(identity=user.username, additional_claims=additional_claims)
@@ -49,7 +54,7 @@ class UsernameAuthentication(Resource):
             set_access_cookies(msg, session_token)
             msg.set_cookie("authenticated", "true", secure=True, domain=AUTHENTICATED_COOKIE_DOMAIN)
             msg.set_cookie("username", username, secure=True, domain=AUTHENTICATED_COOKIE_DOMAIN)
-            
+        """
         """
         # If target level reached (todo : convert to function)
         if get_jwt().get("target_level") == new_level:

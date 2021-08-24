@@ -89,7 +89,6 @@ class CheckUserConfirmMail(Resource):
     def post(self, token):
         try:
             userToken = s.loads(token, salt='user-confirm', max_age=600)
-            print(userToken["username"])
             user = User.query.filter_by(username=userToken["username"]).first()
             if user:
                 # Update confirmed in DB
