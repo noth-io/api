@@ -76,7 +76,7 @@ class Fido2RegisterBegin(Resource):
         print(registration_data)
         print("\n\n\n\n")
         msg = Response(response=cbor.encode(registration_data))
-        msg.set_cookie("fido2register", s.dumps(state, salt='fido2register'), secure=True)
+        msg.set_cookie("fido2register", s.dumps(state, salt='fido2register'), secure=True, max_age=120)
         return msg
 
 @api.route('/register/complete')
