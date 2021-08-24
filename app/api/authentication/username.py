@@ -15,7 +15,7 @@ username_step = 1
 
 @api.route('')
 class UsernameAuthentication(Resource):
-    @jwt_required()
+    @jwt_required(optional=True)
     def post(self):
 
         # Check if correct authentication step
