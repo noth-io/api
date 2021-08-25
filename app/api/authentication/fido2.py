@@ -23,8 +23,8 @@ server = Fido2Server(rp)
 credentials = []
 s = URLSafeTimedSerializer(FIDO2STATE_SECRET)
 
-fido2_level = 3
-fido2_step = 3
+fido2_level = 4
+fido2_step = 4
 
 @api.route('/begin')
 class Fido2AuthenticationBegin(Resource):
