@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '3a86b5d2e473'
-down_revision = '3e3792be1a5d'
+down_revision = '254d6af91809'
 branch_labels = None
 depends_on = None
 
@@ -26,7 +26,7 @@ def upgrade():
     sa.Column('client_metadata', sa.Text(), nullable=True),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
-    sa.Column('enabled', sa.Boolean(), nullable=False),
+    sa.Column('is_enabled', sa.Boolean(), nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )

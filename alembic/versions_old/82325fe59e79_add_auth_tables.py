@@ -27,7 +27,7 @@ def upgrade():
     op.create_table('auth_sequence',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
-    sa.Column('enabled', sa.Boolean(), nullable=False),
+    sa.Column('is_enabled', sa.Boolean(), nullable=False),
     sa.Column('loa', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ondelete='CASCADE'),
@@ -37,7 +37,8 @@ def upgrade():
     sa.Column('auth_sequence_id', sa.Integer(), nullable=False),
     sa.Column('auth_method_id', sa.Integer(), nullable=False),
     sa.Column('step', sa.Integer(), nullable=False),
-    sa.Column('enabled', sa.Boolean(), nullable=False),
+    sa.Column('is_enabled', sa.Boolean(), nullable=False),
+    sa.Column('is_default', sa.Boolean(), nullable=False),
     sa.ForeignKeyConstraint(['auth_method_id'], ['auth_method.id'], ),
     sa.ForeignKeyConstraint(['auth_sequence_id'], ['auth_sequence.id'], ),
     sa.PrimaryKeyConstraint('auth_sequence_id', 'auth_method_id')
@@ -46,7 +47,7 @@ def upgrade():
     # Insert seed data
     auth_method_table = sa.table('auth_method',
         sa.column('name', sa.String),
-        sa.column('enabled', sa.Boolean),
+        sa.column('is_enabled', sa.Boolean),
     )
     op.bulk_insert(auth_method_table,
         [
