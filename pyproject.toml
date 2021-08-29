@@ -13,6 +13,8 @@ itsdangerous = "^2.0.1"
 Authlib = "^0.15.4"
 vonage = "^2.5.5"
 alembic = "^1.6.5"
+PyJWT = "^2.1.0"
+passlib = "^1.7.4"
 
 [tool.poetry.dev-dependencies]
 
