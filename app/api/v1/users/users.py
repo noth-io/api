@@ -6,7 +6,7 @@ from app import models, schemas
 
 router = APIRouter()
 
-@router.get("/")
+@router.get("")
 def get_users(db: Session = Depends(deps.get_db), current_user: models.User = Depends(deps.get_current_active_admin)):
     return user_crud.get_users(db)
 

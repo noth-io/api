@@ -15,6 +15,7 @@ vonage = "^2.5.5"
 alembic = "^1.6.5"
 PyJWT = "^2.1.0"
 passlib = "^1.7.4"
+python-jose = "^3.3.0"
 
 [tool.poetry.dev-dependencies]
 

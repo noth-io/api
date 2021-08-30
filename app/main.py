@@ -5,7 +5,7 @@ from .db.base_class import Base
 from .db.session import SessionLocal, engine
 
 from app.api.v1.api import api_router
-#from app.core.config import settings
+from app.core.config import settings
 
 Base.metadata.create_all(bind=engine)
 
@@ -15,7 +15,6 @@ app = FastAPI(
 )
 
 # Set all CORS enabled origins
-"""
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
         CORSMiddleware,
@@ -24,6 +23,5 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-"""
 
-app.include_router(api_router)
+app.include_router(api_router, prefix="/v1")
