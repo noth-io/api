@@ -30,7 +30,7 @@ Authorization: Bearer {{token}}
 ### GET USER BY ID
 @token = {{getToken.response.body.access_token}}
 # @name getUserByID
-@userId = 2
+@userId = 1
 GET {{baseUrl}}/{{apiVersion}}/users/{{userId}} HTTP/1.1
 Authorization: Bearer {{token}}
 
@@ -48,5 +48,5 @@ POST {{baseUrl}}/{{apiVersion}}/users HTTP/1.1
 
 ### DELETE USER BY ID
 # @name deleteUserByID
-@userId = 2
+@userId = 1
 DELETE {{baseUrl}}/{{apiVersion}}/users/{{userId}} HTTP/1.1

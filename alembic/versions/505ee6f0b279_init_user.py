@@ -27,6 +27,7 @@ def upgrade():
     sa.Column('phone', sa.Unicode(length=255), nullable=False),
     sa.Column('is_confirmed', sa.Boolean(), nullable=False),
     sa.Column('is_admin', sa.Boolean(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email'),
     sa.UniqueConstraint('phone'),
