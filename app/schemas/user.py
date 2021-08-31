@@ -1,9 +1,11 @@
 from typing import List, Optional
 from pydantic import BaseModel
 
-class UserBase(BaseModel):
-    username: str
+class UserMail(BaseModel):
     email: str
+
+class UserBase(UserMail):
+    username: str
     firstname: str
     lastname: str
     phone: int

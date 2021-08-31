@@ -10,7 +10,7 @@ router = APIRouter()
 def get_users(db: Session = Depends(deps.get_db), current_user: models.User = Depends(deps.get_current_active_admin)):
     return user_crud.get_users(db)
 
-@router.post("/", response_model=schemas.User)
+@router.post("", response_model=schemas.User)
 def create_user(user: schemas.UserBase, db: Session = Depends(deps.get_db)):
     db_user = user_crud.get_user_by_email(db, email=user.email)
     if db_user:
