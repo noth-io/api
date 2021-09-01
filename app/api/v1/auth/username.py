@@ -18,10 +18,10 @@ def username_auth(user: schemas.UserMail, db: Session = Depends(deps.get_db)):
     # Check if registered Fido2 credentials
     if credential_crud.get_fido2credentials(db, user_id=db_user.id):
         # If yes, request fido2 auth
-        token = security.create_auth_token(user.email, nextstep=4, current_level=1)
+        authtoken = security.create_auth_token(user.email, nextstep=4, current_level=1)
     else:
         # Else request email auth
-        token = security.create_auth_token(user.email, nextstep=2, current_level=1)
+        authtoken = security.create_auth_token(user.email, nextstep=20, current_level=1)
 
     # Return auth token
-    return responses.generate_auth_response(token, "bearer")
+    return responses.generate_auth_response(authtoken, "bearer")

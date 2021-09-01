@@ -5,8 +5,8 @@ from app.crud import user as user_crud, credential as credential_crud
 from app import models, schemas
 from app.core import security, responses
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
-import requests
-import json
+import requests, json
+from fastapi.encoders import jsonable_encoder
 
 router = APIRouter()
 
@@ -28,17 +28,11 @@ def request_auth_mail(db: Session = Depends(deps.get_db), user: models.User = De
     if get_jwt().get("nextstep") != mail_step:
         abort(400)
         
-    # Check identity in DB
-    current_identity = get_jwt_identity()
-    user = User.query.filter_by(username=current_identity).first()
-    if not user:
-        abort(401, 'invalid user')
     """
 
     # Generate token
-    token = s.dumps(user.email, salt='user-mailauth')
+    token = s.dumps(jsonable_encoder(user), salt='user-mailauth')
 
-    print(user.email)
     # Build mail API Call
     headers = { "accept": "application/json", "api-key": mailapikey, "content-type": "application/json" }
     payload = {  
@@ -60,49 +54,19 @@ def request_auth_mail(db: Session = Depends(deps.get_db), user: models.User = De
     if r.status_code != 201:
         abort(500)
 
-    #additional_claims = {"type": "authentication", "nextstep": "2S", "current_level": 1}
-    #auth_token = create_access_token(identity=user.username, additional_claims=additional_claims)
-    #msg = { "message": "authentication mail sent successfully", "authenticated": False, "auth_token": auth_token }
-    return "titi"
+    authtoken = security.create_auth_token(user.email, nextstep=21, current_level=1)
+    return responses.generate_auth_response(authtoken, "bearer")
 
-"""
-@api.route('/<token>')
-class CheckAuthenticationMail(Resource):
-    def post(self, token):
-
-        # Check token
-        try:
-            userToken = s.loads(token, salt='user-mailauth', max_age=600)
-            user = User.query.filter_by(username=userToken["username"]).first()
-            if not user:
-                raise
-        except:
-            abort(401, 'mail authentication failed')
+@router.post("/{token}")
+def check_auth_mail_token(token: str, db: Session = Depends(deps.get_db)):
+    # Check auth mail token
+    try:
+        emailToken = s.loads(token, salt='user-mailauth', max_age=600)
+        db_user = user_crud.get_user_by_email(db, email=emailToken["email"])
+        if not db_user:
+            raise
+    except:
+        raise HTTPException(status_code=400, detail="Can't validate auth mail token")
      
-
-        # Calculate new auth level
-        #old_level = get_jwt().get("current_level")
-        #new_level = old_level | mail_level
-        #print(new_level)
-
-        
-        # If target level reached (todo : convert to function)
-        if get_jwt().get("target_level") == new_level:
-            # Generate session token
-            additional_claims = {"type": "session", "loa": 1}
-            session_token = create_access_token(identity=user.username, additional_claims=additional_claims)
-            message = { "authenticated": True, "session_token": session_token }
-            msg = Response(response=json.dumps(message), status=200, mimetype="application/json")
-            set_access_cookies(msg, session_token)
-            msg.set_cookie("authenticated", "true", secure=True)
-        else:
-            additional_claims = {"type": "authentication", "target_level": get_jwt().get("target_level"), "nextstep": 4, "current_level": new_level}
-            auth_token = create_access_token(identity=user.username, additional_claims=additional_claims)
-            msg = { "authenticated": False, "auth_token": auth_token }
-        
-        # TEMPORARY, NEED TO IMPLEMENT AUTH SEQUENCES
-        additional_claims = {"type": "authentication", "nextstep": 3, "current_level": 3}
-        auth_token = create_access_token(identity=user.username, additional_claims=additional_claims)
-        msg = { "authenticated": False, "auth_token": auth_token }
-        return msg
-"""
+    authtoken = security.create_auth_token(db_user.email, nextstep=30, current_level=3)
+    return responses.generate_auth_response(authtoken, "bearer")

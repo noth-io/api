@@ -19,6 +19,11 @@ POST {{baseUrl}}/{{apiVersion}}/auth/username HTTP/1.1
 GET {{baseUrl}}/{{apiVersion}}/auth/email HTTP/1.1
 Authorization: Bearer {{authtoken}}
 
+### CHECK EMAIL AUTH TOKEN
+@authMailToken = .eJx9jr0OgzAMhN_FM6CQUCoydetedUdWMDRSflCSTlXfvQaqjpW8-O473b3gmSkF9AQaUvRoQ7MkCoUuCz-uMdFDBbNNuXyp206xuD5i2ASl-vbcnTolBlZtHk0MHPA0gZ7RZarAJMJC04iFeSlkW4uhFu1d9FrxiS3HtKyAtta_Wxz-plx39yjFyfOqo_D9AVOLRSE.YS9RiA.vy2FIqKGaD_NsaM_dgrCMhQDC2o
+# @name CheckEmailAuthToken
+POST {{baseUrl}}/{{apiVersion}}/auth/email/{{authMailToken}} HTTP/1.1
+
 ### GET TOKEN
 # @name getToken
 POST {{baseUrl}}/{{apiVersion}}/auth/token HTTP/1.1
