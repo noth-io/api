@@ -10,8 +10,14 @@
 POST {{baseUrl}}/{{apiVersion}}/auth/username HTTP/1.1
 
 {
-    "email": "jdoe@foo"
+    "email": "romain.grente@gmail.com"
 }
+
+### EMAIL AUTH
+@authtoken = {{usernameAuth.response.body.auth_token}}
+# @name emailAuth
+GET {{baseUrl}}/{{apiVersion}}/auth/email HTTP/1.1
+Authorization: Bearer {{authtoken}}
 
 ### GET TOKEN
 # @name getToken
@@ -39,14 +45,24 @@ Authorization: Bearer {{token}}
 POST {{baseUrl}}/{{apiVersion}}/users HTTP/1.1
 
 {
-    "username": "jdoe@foo",
-    "email": "jdoe@foo",
-    "firstname": "John",
-    "lastname": "Doe",
-    "phone": 33612345678
+    "username": "romain.grente@gmail.com",
+    "email": "romain.grente@gmail.com",
+    "firstname": "Romain",
+    "lastname": "Grente",
+    "phone": 33617454309
 }
 
 ### DELETE USER BY ID
 # @name deleteUserByID
 @userId = 1
 DELETE {{baseUrl}}/{{apiVersion}}/users/{{userId}} HTTP/1.1
+
+######################################
+# CREDENTIALS API
+######################################
+
+### GET ALL FIDO2 CREDENTIALS
+@token = {{getToken.response.body.access_token}}
+# @name getAllFido2Credentials
+GET {{baseUrl}}/{{apiVersion}}/credentials/fido2 HTTP/1.1
+Authorization: Bearer {{token}}
