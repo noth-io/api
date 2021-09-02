@@ -17,6 +17,16 @@ class Settings(BaseSettings):
     # "http://localhost:8080", "http://local.dockertoolbox.tiangolo.com"]'
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
 
+    NOTH_UI_URL = "https://noth-dev.meanite.tk"
+
+    MAIL_SENDER_NAME = "Noth"
+    MAIL_SENDER_EMAIL = "admin@noth.io"
+    MAIL_API_KEY = "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"
+    MAIL_API_URL = "https://api.sendinblue.com/v3/smtp/email"
+    MAIL_API_URL = "https://api.sendinblue.com/v3/smtp/email"
+
+    AUTH_MAIL_TOKEN_KEY = "authmailtoken"
+
     """
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:

@@ -7,38 +7,28 @@ from app.core import security, responses
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 import requests, json
 from fastapi.encoders import jsonable_encoder
+from app.core.config import settings
 
 router = APIRouter()
+s = URLSafeTimedSerializer(settings.AUTH_MAIL_TOKEN_KEY)
 
-# Config Mail
-MAIL_SENDER_NAME = "Noth"
-MAIL_SENDER_EMAIL = "admin@noth.io"
-NOTH_UI_URL = "https://noth-dev.meanite.tk"
-mailapikey = "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"
-mailapiurl = "https://api.sendinblue.com/v3/smtp/email"
-s = URLSafeTimedSerializer("toto")
-
-mail_level = 2
-mail_step = 2
-
+# REQUEST AUTH MAIL
 @router.get("")
-def request_auth_mail(db: Session = Depends(deps.get_db), user: models.User = Depends(deps.get_current_user)):
-    """
-    # Check if correct authentication step
-    if get_jwt().get("nextstep") != mail_step:
-        abort(400)
-        
-    """
+def request_auth_mail(db: Session = Depends(deps.get_db), user: models.User = Depends(deps.get_current_user), token_data: schemas.AuthTokenPayload = Depends(deps.get_current_authtoken)):
+
+    # Check token step
+    if token_data.nextstep != 20:
+        raise HTTPException(status_code=400, detail="Invalid authentication token step")
 
     # Generate token
     token = s.dumps(jsonable_encoder(user), salt='user-mailauth')
 
     # Build mail API Call
-    headers = { "accept": "application/json", "api-key": mailapikey, "content-type": "application/json" }
+    headers = { "accept": "application/json", "api-key": settings.MAIL_API_KEY, "content-type": "application/json" }
     payload = {  
         "sender": {  
-            "name": MAIL_SENDER_NAME,
-            "email": MAIL_SENDER_EMAIL
+            "name": settings.MAIL_SENDER_NAME,
+            "email": settings.MAIL_SENDER_EMAIL
         },
         "to": [  
             {  
@@ -47,16 +37,19 @@ def request_auth_mail(db: Session = Depends(deps.get_db), user: models.User = De
             }
         ],
         "subject": "User authentication",
-        "htmlContent": "<html><head></head><body><a href='%s/login/mail/%s'>Click here to authenticate</a></body></html>" % (NOTH_UI_URL, token)
+        "htmlContent": "<html><head></head><body><a href='%s/login/mail/%s'>Click here to authenticate</a></body></html>" % (settings.NOTH_UI_URL, token)
     }
-    r = requests.post(mailapiurl, headers=headers, data=json.dumps(payload))
 
+    # Send mail
+    r = requests.post(settings.MAIL_API_URL, headers=headers, data=json.dumps(payload))
     if r.status_code != 201:
-        abort(500)
+        raise HTTPException(status_code=500)
 
+    # Build authtoken
     authtoken = security.create_auth_token(user.email, nextstep=21, current_level=1)
     return responses.generate_auth_response(authtoken, "bearer")
 
+# CHECK AUTH MAIL TOKEN
 @router.post("/{token}")
 def check_auth_mail_token(token: str, db: Session = Depends(deps.get_db)):
     # Check auth mail token
@@ -68,5 +61,6 @@ def check_auth_mail_token(token: str, db: Session = Depends(deps.get_db)):
     except:
         raise HTTPException(status_code=400, detail="Can't validate auth mail token")
      
+    # Build authtoken
     authtoken = security.create_auth_token(db_user.email, nextstep=30, current_level=3)
     return responses.generate_auth_response(authtoken, "bearer")
