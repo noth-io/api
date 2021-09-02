@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app import models, schemas
+import models, schemas
 from fastapi import Depends, FastAPI
 
 def get_user(db: Session, user_id: int):

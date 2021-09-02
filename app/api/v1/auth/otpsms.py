@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Body, Depends, HTTPException
-from app.api import deps
+from api import deps
 from sqlalchemy.orm import Session
-from app.crud import otp as otp_crud
-from app import models, schemas
-from app.core import security, responses
+from crud import otp as otp_crud
+import models, schemas
+from core import security, responses
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 import requests, json
 from fastapi.encoders import jsonable_encoder
-from app.core.config import settings
+from core.config import settings
 import vonage
 from fastapi.responses import JSONResponse
 
@@ -21,10 +21,9 @@ sms = vonage.Sms(client)
 @router.get("")
 def request_otpsms(db: Session = Depends(deps.get_db), user: models.User = Depends(deps.get_current_user), token_data: schemas.AuthTokenPayload = Depends(deps.get_current_authtoken)):
 
-    print(settings.TEST)
     # Check token step
-    #if token_data.nextstep != 30:
-    #    raise HTTPException(status_code=400, detail="Invalid authentication token step")
+    if token_data.nextstep != 30:
+        raise HTTPException(status_code=400, detail="Invalid authentication token step")
 
     # Generate and store OTP code
     code = otp_crud.create_otp(db, user.id)

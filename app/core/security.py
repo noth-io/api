@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
 from typing import Any, Union
-from app import schemas
+import schemas
 from jose import jwt
 from passlib.context import CryptContext
 from fastapi import HTTPException
-from app.core.config import settings
+from core.config import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -22,7 +22,7 @@ def create_auth_token(
         )
     to_encode = {"exp": expire, "sub": str(subject), "type": "authentication", "nextstep": nextstep, "current_level": current_level}
     encoded_jwt = jwt.encode(
-        to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
+        to_encode, settings.TOKEN_SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 
@@ -37,7 +37,7 @@ def create_session_token(
         )
     to_encode = {"exp": expire, "sub": str(subject), "type": "session", "loa": loa}
     encoded_jwt = jwt.encode(
-        to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
+        to_encode, settings.TOKEN_SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 """
@@ -52,7 +52,7 @@ def get_password_hash(password: str) -> str:
 def validate_token(token: str):
     try:
         payload = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=[ALGORITHM]
+            token, settings.TOKEN_SECRET_KEY, algorithms=[ALGORITHM]
         )
         token_data = schemas.TokenPayload(**payload)
     except:

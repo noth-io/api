@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app import models, schemas
+import models, schemas
 #from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, FastAPI
 

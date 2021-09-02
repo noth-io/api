@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.auth import token, username, email, otpsms
+from api.v1.auth import token, username, email, otpsms
 
 router = APIRouter()
 router.include_router(username.router, prefix="/username")

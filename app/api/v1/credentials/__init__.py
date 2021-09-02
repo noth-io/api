@@ -1,1 +1,1 @@
-from app.api.v1.credentials.api import router
+from api.v1.credentials.api import router

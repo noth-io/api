@@ -1,12 +1,12 @@
 from typing import Generator
-from app.db.session import SessionLocal
+from db.session import SessionLocal
 from fastapi.security import OAuth2PasswordBearer
-from app import models, schemas
+import models, schemas
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from app.crud import user as user_crud
-from app.core.config import settings
-from app.core import security
+from crud import user as user_crud
+from core.config import settings
+from core import security
 
 from jose import jwt
 

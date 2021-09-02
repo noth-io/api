@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app import models, schemas
+import models, schemas
 from fastapi import Depends, FastAPI, HTTPException
 import math, random
 from datetime import datetime, timedelta

@@ -19,10 +19,10 @@ POST {{baseUrl}}/{{apiVersion}}/auth/username HTTP/1.1
 # EMAIL
 # ------------------------------------
 ### GET AUTH EMAIL
-@authtoken = {{usernameAuth.response.body.auth_token}}
+@authtoken1 = {{usernameAuth.response.body.auth_token}}
 # @name emailAuth
 GET {{baseUrl}}/{{apiVersion}}/auth/email HTTP/1.1
-Authorization: Bearer {{authtoken}}
+Authorization: Bearer {{authtoken1}}
 
 ### CHECK EMAIL AUTH TOKEN
 @authMailToken = .eJx9jr0OgzAMhN_FM6CQUCoydetedUdWMDRSflCSTlXfvQaqjpW8-O473b3gmSkF9AQaUvRoQ7MkCoUuCz-uMdFDBbNNuXyp206xuD5i2ASl-vbcnTolBlZtHk0MHPA0gZ7RZarAJMJC04iFeSlkW4uhFu1d9FrxiS3HtKyAtta_Wxz-plx39yjFyfOqo_D9AVOLRSE.YTCeUA.9Qf2Q-NLT1aFNZN2Ys1JhzlfMsQ
@@ -33,17 +33,17 @@ POST {{baseUrl}}/{{apiVersion}}/auth/email/{{authMailToken}} HTTP/1.1
 # OTP SMS
 # ------------------------------------
 ### GET OTPSMS
-@authtoken = {{usernameAuth.response.body.auth_token}}
+@authtoken2 = {{usernameAuth.response.body.auth_token}}
 # @name OTPSMSAuth
 GET {{baseUrl}}/{{apiVersion}}/auth/otpsms HTTP/1.1
-Authorization: Bearer {{authtoken}}
+Authorization: Bearer {{authtoken2}}
 
 ### VALIDATE OTPSMS
-@authtoken = {{OTPSMSAuth.response.body.auth_token}}
-@otpcode = 638014
+@authtoken3 = {{OTPSMSAuth.response.body.auth_token}}
+@otpcode = 156703
 # @name checkOTPSMS
 POST {{baseUrl}}/{{apiVersion}}/auth/otpsms HTTP/1.1
-Authorization: Bearer {{authtoken}}
+Authorization: Bearer {{authtoken3}}
 
 {
     "code": "{{otpcode}}"
