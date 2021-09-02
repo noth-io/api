@@ -21,6 +21,7 @@ sms = vonage.Sms(client)
 @router.get("")
 def request_otpsms(db: Session = Depends(deps.get_db), user: models.User = Depends(deps.get_current_user), token_data: schemas.AuthTokenPayload = Depends(deps.get_current_authtoken)):
 
+    print(settings.TEST)
     # Check token step
     #if token_data.nextstep != 30:
     #    raise HTTPException(status_code=400, detail="Invalid authentication token step")
