@@ -18,3 +18,4 @@ class User(Base):
     created_at = Column(DateTime, nullable=False, default=func.now())
 
     fido2credential = relationship("Fido2Credential", back_populates="user")
+    otp = relationship("OTP", back_populates="user")

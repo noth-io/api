@@ -20,15 +20,14 @@ def create_auth_token(
         expire = datetime.utcnow() + timedelta(
             minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
         )
-    to_encode = {"exp": expire, "sub": str(
-        subject), "type": "authentication", "nextstep": nextstep, "current_level": current_level}
+    to_encode = {"exp": expire, "sub": str(subject), "type": "authentication", "nextstep": nextstep, "current_level": current_level}
     encoded_jwt = jwt.encode(
         to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 
-def create_access_token(
-    subject: Union[str, Any], expires_delta: timedelta = None
+def create_session_token(
+    subject: Union[str, Any], loa: int, expires_delta: timedelta = None
 ) -> str:
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
@@ -36,7 +35,7 @@ def create_access_token(
         expire = datetime.utcnow() + timedelta(
             minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
         )
-    to_encode = {"exp": expire, "sub": str(subject)}
+    to_encode = {"exp": expire, "sub": str(subject), "type": "session", "loa": loa}
     encoded_jwt = jwt.encode(
         to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt

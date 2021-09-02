@@ -5,6 +5,7 @@ from pydantic import AnyHttpUrl, BaseSettings, EmailStr, HttpUrl, PostgresDsn, v
 
 
 class Settings(BaseSettings):
+    ENV: str = "DEV"
     API_V1_STR: str = "/v1"
     #SECRET_KEY: str = secrets.token_urlsafe(32)
     SECRET_KEY: str = "key" # dev only
@@ -27,6 +28,9 @@ class Settings(BaseSettings):
 
     AUTH_MAIL_TOKEN_KEY = "authmailtoken"
 
+    COOKIE_DOMAIN = ".noth-dev.meanite.tk"
+    OTP_LIFETIME = 300
+    
     """
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
