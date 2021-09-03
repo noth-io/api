@@ -1,4 +1,4 @@
-@baseUrl = https://api.noth-dev.meanite.tk
+@baseUrl = https://api.noth.meanite.tk
 @apiVersion = v1
 
 ######################################

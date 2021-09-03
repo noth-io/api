@@ -6,7 +6,7 @@ import os
 class Settings(BaseSettings):
     ENV: str = os.getenv("NOTH_API_ENV")
     API_V1_STR: str = "/v1"
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
+    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = [os.getenv("NOTH_UI_URL")]
 
     TOKEN_SECRET_KEY: str = os.getenv("NOTH_API_TOKEN_SECRET_KEY")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = os.getenv("NOTH_API_TOKEN_LIFETIME")
