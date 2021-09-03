@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     OTP_LIFETIME: int = os.getenv("NOTH_API_OTP_LIFETIME")
     SQLALCHEMY_DATABASE_URL: str = "postgresql://%s:%s@%s/%s" % (os.getenv("NOTH_API_DB_USER"), os.getenv("NOTH_API_DB_PASSWORD"), os.getenv("NOTH_API_DB_URL"), os.getenv("NOTH_API_DB_NAME"))
     
+    FIDO2_RP: str = os.getenv("NOTH_API_FIDO2_RP")
+    FIDO2_NAME: str = os.getenv("NOTH_API_FIDO2_NAME")
+    FIDO2_STATE_SECRET_KEY: str = os.getenv("NOTH_API_FIDO2_STATE_SECRET_KEY")
+
     class Config:
         case_sensitive = True
 

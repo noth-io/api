@@ -2,7 +2,7 @@ from typing import Generator
 from db.session import SessionLocal
 from fastapi.security import OAuth2PasswordBearer
 import models, schemas
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Cookie
 from sqlalchemy.orm import Session
 from crud import user as user_crud
 from core.config import settings
@@ -23,6 +23,13 @@ def get_db() -> Generator:
 
 def get_current_user(db: Session = Depends(get_db), token: str = Depends(reusable_oauth2)) -> models.User:
     token_data = security.validate_token(token)
+    user = user_crud.get_user_by_email(db, email=token_data.sub)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+def get_current_user_from_cookie(db: Session = Depends(get_db), session: str = Cookie(None)) -> models.User:
+    token_data = security.validate_token(session)
     user = user_crud.get_user_by_email(db, email=token_data.sub)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
