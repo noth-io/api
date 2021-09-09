@@ -1,0 +1,96 @@
+@baseUrl = https://api.noth-dev.meanite.tk
+@apiVersion = v1
+
+######################################
+# AUTH API
+######################################
+
+# ------------------------------------
+# USERNAME
+# ------------------------------------
+# @name usernameAuth
+POST {{baseUrl}}/{{apiVersion}}/auth/username HTTP/1.1
+
+{
+    "email": "romain.grente@gmail.com"
+}
+
+# ------------------------------------
+# EMAIL
+# ------------------------------------
+### GET AUTH EMAIL
+@authtoken1 = {{usernameAuth.response.body.auth_token}}
+# @name emailAuth
+GET {{baseUrl}}/{{apiVersion}}/auth/email HTTP/1.1
+Authorization: Bearer {{authtoken1}}
+
+### CHECK EMAIL AUTH TOKEN
+@authMailToken = .eJx9jr0OgzAMhN_FM6CQUCoydetedUdWMDRSflCSTlXfvQaqjpW8-O473b3gmSkF9AQaUvRoQ7MkCoUuCz-uMdFDBbNNuXyp206xuD5i2ASl-vbcnTolBlZtHk0MHPA0gZ7RZarAJMJC04iFeSlkW4uhFu1d9FrxiS3HtKyAtta_Wxz-plx39yjFyfOqo_D9AVOLRSE.YTCeUA.9Qf2Q-NLT1aFNZN2Ys1JhzlfMsQ
+# @name checkEmailAuthToken
+POST {{baseUrl}}/{{apiVersion}}/auth/email/{{authMailToken}} HTTP/1.1
+
+# ------------------------------------
+# OTP SMS
+# ------------------------------------
+### GET OTPSMS
+@authtoken2 = {{usernameAuth.response.body.auth_token}}
+# @name OTPSMSAuth
+GET {{baseUrl}}/{{apiVersion}}/auth/otpsms HTTP/1.1
+Authorization: Bearer {{authtoken2}}
+
+### VALIDATE OTPSMS
+@authtoken3 = {{OTPSMSAuth.response.body.auth_token}}
+@otpcode = 720791
+# @name checkOTPSMS
+POST {{baseUrl}}/{{apiVersion}}/auth/otpsms HTTP/1.1
+Authorization: Bearer {{authtoken3}}
+
+{
+    "code": "{{otpcode}}"
+}
+
+### GET TOKEN
+# @name getToken
+POST {{baseUrl}}/{{apiVersion}}/auth/token HTTP/1.1
+
+######################################
+# USERS API
+######################################
+
+### GET ALL USERS
+@token = {{getToken.response.body.access_token}}
+# @name getAllUsers
+GET {{baseUrl}}/{{apiVersion}}/users HTTP/1.1
+Authorization: Bearer {{token}}
+
+### GET USER BY ID
+@token = {{getToken.response.body.access_token}}
+# @name getUserByID
+@userId = 1
+GET {{baseUrl}}/{{apiVersion}}/users/{{userId}} HTTP/1.1
+Authorization: Bearer {{token}}
+
+### CREATE USER
+# @name createUser
+POST {{baseUrl}}/{{apiVersion}}/users HTTP/1.1
+
+{
+    "username": "romain.grente@gmail.com",
+    "email": "romain.grente@gmail.com",
+    "firstname": "Romain",
+    "lastname": "Grente",
+    "phone": 33617454309
+}
+
+### DELETE USER BY ID
+# @name deleteUserByID
+@userId = 1
+DELETE {{baseUrl}}/{{apiVersion}}/users/{{userId}} HTTP/1.1
+
+######################################
+# CREDENTIALS API
+######################################
+
+### GET ALL FIDO2 CREDENTIALS
+# @name getAllFido2Credentials
+GET {{baseUrl}}/{{apiVersion}}/credentials/fido2 HTTP/1.1
