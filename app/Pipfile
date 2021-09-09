@@ -1,0 +1,23 @@
+[[source]]
+verify_ssl = true
+name = "pypi"
+url = "https://pypi.org/simple"
+
+[requires]
+python_version = "3.8"
+
+[packages]
+fastapi = "*"
+uvicorn = "*"
+SQLAlchemy = "*"
+itsdangerous = "*"
+Authlib = "*"
+vonage = "*"
+alembic = "*"
+PyJWT = "*"
+passlib = "*"
+python-jose = "*"
+psycopg2-binary = "*"
+
+[scripts]
+api = "uvicorn main:app --reload"
