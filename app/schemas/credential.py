@@ -3,8 +3,8 @@ from pydantic import BaseModel
 from datetime import datetime
 
 class Fido2CredentialBase(BaseModel):
-    attestation: bytes
     user_id: int
+    attestation: bytes
 
 class Fido2Credential(Fido2CredentialBase):
     id: int

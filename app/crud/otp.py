@@ -15,7 +15,7 @@ def is_valid_otp(db: Session, code: int, user_id: int, lifetime: int):
     db_otp = db.query(models.OTP).filter(models.OTP.user_id == user_id).order_by(models.OTP.created_at.desc()).first()
     if not db_otp or db_otp.code != code:
         raise HTTPException(status_code=400, detail="Invalid OTP code")
-    if db_otp.created_at < datetime.now() - timedelta(seconds=int(lifetime)):
+    if db_otp.created_at < datetime.utcnow() - timedelta(seconds=int(lifetime)):
         raise HTTPException(status_code=400, detail="Expired OTP code")
     return True
 

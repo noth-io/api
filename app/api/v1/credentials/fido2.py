@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body, Depends, HTTPException, Cookie, Response
+from fastapi import APIRouter, Body, Depends, HTTPException, Cookie, Response, Request
 from api import deps
 from sqlalchemy.orm import Session
 from crud import user as user_crud, credential as credential_crud
@@ -9,8 +9,9 @@ from utils.fido2.client import ClientData
 from utils.fido2.server import Fido2Server
 from utils.fido2.ctap2 import AttestationObject, AuthenticatorData, AttestedCredentialData
 from utils.fido2 import cbor
-from core.security import settings
+from core.config import settings
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
+import base64
 
 router = APIRouter()
 
@@ -23,19 +24,17 @@ s = URLSafeTimedSerializer(settings.FIDO2_STATE_SECRET_KEY)
 # GET ALL CURRENT USER FIDO 2 CREDENTIALS
 @router.get("", response_model=List[schemas.Fido2Credential])
 def get_user_fido2_credentials(db: Session = Depends(deps.get_db), user: schemas.User = Depends(deps.get_current_user_from_cookie)):
+    #print(credential_crud.get_fido2credentials(db, user_id=user.id))
     return credential_crud.get_fido2credentials(db, user_id=user.id)
 
 # REGISTER FIDO2 CREDENTIAL : BEGIN
 @router.post("/register/begin")
-def begin_register_fido2_credentials(db: Session = Depends(deps.get_db), user: schemas.User = Depends(deps.get_current_user_from_cookie)):
-    """
+def begin_register_fido2_credentials(request: Request, db: Session = Depends(deps.get_db), user: schemas.User = Depends(deps.get_current_user_from_cookie)):
     # Check if Android with user agent
-    if "Android" in request.headers.get('User-Agent'):
+    if "Android" in request.headers['User-Agent']:
         authenticator_attachment = "platform"
     else:
         authenticator_attachment = "cross-platform"
-    """
-    authenticator_attachment = "cross-platform"
 
     registration_data, state = server.register_begin(
         {
@@ -50,14 +49,36 @@ def begin_register_fido2_credentials(db: Session = Depends(deps.get_db), user: s
         resident_key="False"
     )
 
-    #session["state"] = state
-    print("\n\n\n\n")
-    print(registration_data)
-    print("\n\n\n\n")
+    #print("\n\n\n\n")
+    #print(registration_data)
+    #print("\n\n\n\n")
     response = Response(content=cbor.encode(registration_data))
     response.set_cookie("fido2register", value=s.dumps(state, salt='fido2register'), secure=True, max_age=120)
     return response 
 
+# REGISTER FIDO2 CREDENTIAL : COMPLETE
+@router.post("/register/complete")
+async def complete_register_fido2_credentials(request: Request, db: Session = Depends(deps.get_db), user: schemas.User = Depends(deps.get_current_user_from_cookie)):
+    # GET fido2registercookie
+    state = s.loads(request.cookies.get('fido2register'), salt='fido2register', max_age=60)
+
+    data = cbor.decode(await request.body())
+    client_data = ClientData(data["clientDataJSON"])
+    att_obj = AttestationObject(data["attestationObject"])
+    #print("clientData", client_data)
+    #print("AttestationObject:", att_obj)
+
+    auth_data = server.register_complete(state, client_data, att_obj)
+
+    # INSERT in DB
+    #print(auth_data.credential_data) 
+    #print(base64.b64encode(auth_data.credential_data))
+    credential_crud.create_fido2credential(db, user_id=user.id, attestation=base64.b64encode(auth_data.credential_data))
+
+    #print("REGISTERED CREDENTIAL:", auth_data.credential_data)
+    response = Response(content=cbor.encode({"status": "OK"}))
+    response.set_cookie("fido2register", secure=True, expires=0)
+    return response 
 """
 @router.post("", response_model=schemas.User)
 def create_user(user: schemas.UserBase, db: Session = Depends(deps.get_db)):
@@ -108,43 +129,7 @@ class FIDO2Creds(Resource):
         resp = Response(response=json.dumps(response, default=str), status=200, mimetype="application/json")
         return resp
 
-@api.route('/register/begin')
-class Fido2RegisterBegin(Resource):
-    @jwt_required(locations=["cookies"])
-    def post(self):
 
-        # Check identity in DB
-        current_identity = get_jwt_identity()
-        user = User.query.filter_by(username=current_identity).first()
-        if not user:
-            abort(401)
-
-        # Check if Android with user agent
-        if "Android" in request.headers.get('User-Agent'):
-            authenticator_attachment = "platform"
-        else:
-            authenticator_attachment = "cross-platform"
-
-        registration_data, state = server.register_begin(
-            {
-                "id": bytes(user.id),
-                "name": user.username,
-                "displayName": user.firstname,
-                "icon": "https://example.com/image.png",
-            },
-            credentials,
-            user_verification="discouraged",
-            authenticator_attachment=authenticator_attachment,
-            resident_key="False"
-        )
-
-        #session["state"] = state
-        print("\n\n\n\n")
-        print(registration_data)
-        print("\n\n\n\n")
-        msg = Response(response=cbor.encode(registration_data))
-        msg.set_cookie("fido2register", s.dumps(state, salt='fido2register'), secure=True, max_age=120)
-        return msg
 
 @api.route('/register/complete')
 class Fido2RegisterComplete(Resource):
