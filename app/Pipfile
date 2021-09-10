@@ -20,4 +20,4 @@ python-jose = "*"
 psycopg2-binary = "*"
 
 [scripts]
-api = "uvicorn main:app --reload --host 0.0.0.0"
+api = "uvicorn main:app --reload --host 0.0.0.0 --port 20001"
