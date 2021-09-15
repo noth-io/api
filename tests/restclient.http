@@ -1,4 +1,4 @@
-@baseUrl = https://api.noth-dev.meanite.tk
+@baseUrl = https://api.noth-dev.cloud.meanite.fr
 @apiVersion = v1
 
 ######################################
@@ -66,7 +66,7 @@ Authorization: Bearer {{token}}
 ### GET USER BY ID
 @token = {{getToken.response.body.access_token}}
 # @name getUserByID
-@userId = 1
+@userId = 9
 GET {{baseUrl}}/{{apiVersion}}/users/{{userId}} HTTP/1.1
 Authorization: Bearer {{token}}
 
@@ -84,7 +84,7 @@ POST {{baseUrl}}/{{apiVersion}}/users HTTP/1.1
 
 ### DELETE USER BY ID
 # @name deleteUserByID
-@userId = 1
+@userId = 4
 DELETE {{baseUrl}}/{{apiVersion}}/users/{{userId}} HTTP/1.1
 
 ######################################
