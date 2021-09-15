@@ -15,3 +15,6 @@ class TokenPayload(BaseModel):
 class AuthTokenPayload(TokenPayload):
     current_level: int
     nextstep: int
+
+class RegisterTokenPayload(TokenPayload):
+    step: int

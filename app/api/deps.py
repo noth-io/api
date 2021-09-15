@@ -39,6 +39,10 @@ def get_current_authtoken(db: Session = Depends(get_db), token: str = Depends(re
     token_data = security.validate_token(token)
     return token_data
 
+def get_current_registertoken(db: Session = Depends(get_db), token: str = Depends(reusable_oauth2)) -> schemas.RegisterTokenPayload:
+    token_data = security.validate_token(token)
+    return token_data
+
 def get_current_active_admin(
     current_user: models.User = Depends(get_current_user),
     ) -> models.User:

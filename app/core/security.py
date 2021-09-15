@@ -10,6 +10,20 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 ALGORITHM = "HS256"
 
+def create_register_token(
+    subject: Union[str, Any], step: int, expires_delta: timedelta = None
+) -> str:
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(
+            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+        )
+    to_encode = {"exp": expire, "sub": str(subject), "type": "register", "step": step}
+    encoded_jwt = jwt.encode(
+        to_encode, settings.TOKEN_SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
 
 def create_auth_token(
     subject: Union[str, Any], nextstep: int, current_level: int, expires_delta: timedelta = None
@@ -62,4 +76,6 @@ def validate_token(token: str):
         )
     if token_data.type == "authentication":
         token_data = schemas.AuthTokenPayload(**payload)
+    if token_data.type == "register":
+        token_data = schemas.RegisterTokenPayload(**payload)
     return token_data

@@ -8,6 +8,7 @@ from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 import requests, json
 from fastapi.encoders import jsonable_encoder
 from core.config import settings
+from utils import email
 
 router = APIRouter()
 s = URLSafeTimedSerializer(settings.AUTH_MAIL_TOKEN_KEY)
@@ -23,27 +24,8 @@ def request_auth_mail(db: Session = Depends(deps.get_db), user: models.User = De
     # Generate token
     token = s.dumps(jsonable_encoder(user), salt='user-mailauth')
 
-    # Build mail API Call
-    headers = { "accept": "application/json", "api-key": settings.MAIL_API_KEY, "content-type": "application/json" }
-    payload = {  
-        "sender": {  
-            "name": settings.MAIL_SENDER_NAME,
-            "email": settings.MAIL_SENDER_EMAIL
-        },
-        "to": [  
-            {  
-                "email": user.email,
-                "name": "%s %s" % (user.firstname, user.lastname)
-            }
-        ],
-        "subject": "User authentication",
-        "htmlContent": "<html><head></head><body><a href='%s/login/mail/%s'>Click here to authenticate</a></body></html>" % (settings.NOTH_UI_URL, token)
-    }
-
-    # Send mail
-    r = requests.post(settings.MAIL_API_URL, headers=headers, data=json.dumps(payload))
-    if r.status_code != 201:
-        raise HTTPException(status_code=500)
+    # Send authentication email
+    email.send(user, type="authentication", token=token)
 
     # Build authtoken
     authtoken = security.create_auth_token(user.email, nextstep=21, current_level=1)

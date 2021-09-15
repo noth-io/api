@@ -5,14 +5,13 @@ class UserMail(BaseModel):
     email: str
 
 class UserBase(UserMail):
-    username: str
     firstname: str
     lastname: str
-    phone: int
+    phone: str
 
 class User(UserBase):
     id: int
-    is_confirmed: bool
+    is_phone_confirmed: bool
     is_admin: bool
 
     class Config:
