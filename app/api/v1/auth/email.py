@@ -9,6 +9,7 @@ import requests, json
 from fastapi.encoders import jsonable_encoder
 from core.config import settings
 from utils import email
+from fastapi.responses import JSONResponse
 
 router = APIRouter()
 s = URLSafeTimedSerializer(settings.AUTH_MAIL_TOKEN_KEY)
@@ -44,5 +45,13 @@ def check_auth_mail_token(token: str, db: Session = Depends(deps.get_db)):
         raise HTTPException(status_code=400, detail="Can't validate auth mail token")
      
     # Build authtoken
-    authtoken = security.create_auth_token(db_user.email, nextstep=30, current_level=3)
-    return responses.generate_auth_response(authtoken, "bearer")
+    #authtoken = security.create_auth_token(db_user.email, nextstep=30, current_level=3)
+    #return responses.generate_auth_response(authtoken, "bearer")
+    # Return session token
+    session_token = security.create_session_token(db_user.email, loa=1)
+    content = { "authenticated": True }
+    response = JSONResponse(content=content)
+    response.set_cookie(key="session", value=session_token, secure=True, domain=settings.COOKIE_DOMAIN, httponly=True)
+    response.set_cookie(key="authenticated", value=True, secure=True, domain=settings.COOKIE_DOMAIN)
+    response.set_cookie(key="username", value=db_user.email, secure=True, domain=settings.COOKIE_DOMAIN)
+    return response

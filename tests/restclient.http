@@ -53,6 +53,10 @@ Authorization: Bearer {{authtoken3}}
 # @name getToken
 POST {{baseUrl}}/{{apiVersion}}/auth/token HTTP/1.1
 
+### LOGOUT
+# @name logout
+GET {{baseUrl}}/{{apiVersion}}/auth/logout HTTP/1.1
+
 ######################################
 # USERS API
 ######################################
